@@ -1,33 +1,33 @@
 [workspace]
 resolver = "3"
 members = ["crates/*", "apps/*", "xtask"]
-default-members = ["crates/*", "apps/wordcraft", "apps/wordcraft-cli", "xtask"]
+default-members = ["crates/*", "apps/wordz", "apps/wordz-cli", "xtask"]
 
 [workspace.package]
 version = "0.6.1"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 rust-version = "1.90"
-repository = "https://github.com/storytold/wordcraft"
+repository = "https://github.com/danish0440/wordz"
 
 [workspace.dependencies]
 # internal
-wordcraft-geom = { path = "crates/geom" }
-wordcraft-doc = { path = "crates/doc" }
-wordcraft-fonts = { path = "crates/fonts" }
-wordcraft-layout = { path = "crates/layout" }
-wordcraft-docx = { path = "crates/docx" }
-wordcraft-docbin = { path = "crates/docbin" }
-wordcraft-formats = { path = "crates/formats" }
-wordcraft-render = { path = "crates/render" }
-wordcraft-pdf = { path = "crates/pdf" }
-wordcraft-proof = { path = "crates/proof" }
-wordcraft-engine = { path = "crates/engine" }
-wordcraft-mcp = { path = "crates/mcp" }
-wordcraft-zotero = { path = "crates/zotero" }
-wordcraft-control-key = { path = "crates/control-key" }
-wordcraft-ui-egui = { path = "crates/ui-egui" }
-wordcraft-metafile = { path = "crates/metafile" }
+wordz-geom = { path = "crates/geom" }
+wordz-doc = { path = "crates/doc" }
+wordz-fonts = { path = "crates/fonts" }
+wordz-layout = { path = "crates/layout" }
+wordz-docx = { path = "crates/docx" }
+wordz-docbin = { path = "crates/docbin" }
+wordz-formats = { path = "crates/formats" }
+wordz-render = { path = "crates/render" }
+wordz-pdf = { path = "crates/pdf" }
+wordz-proof = { path = "crates/proof" }
+wordz-engine = { path = "crates/engine" }
+wordz-mcp = { path = "crates/mcp" }
+wordz-zotero = { path = "crates/zotero" }
+wordz-control-key = { path = "crates/control-key" }
+wordz-ui-egui = { path = "crates/ui-egui" }
+wordz-metafile = { path = "crates/metafile" }
 
 # foundation
 kurbo = { version = "0.13", features = ["serde"] }

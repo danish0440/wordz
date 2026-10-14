@@ -5097,7 +5097,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "wordcraft"
+name = "wordz"
 version = "0.6.1"
 dependencies = [
  "arboard",
@@ -5119,33 +5119,33 @@ dependencies = [
  "winit",
  "winresource",
  "wl-clipboard-rs",
- "wordcraft-control-key",
- "wordcraft-doc",
- "wordcraft-engine",
- "wordcraft-fonts",
- "wordcraft-proof",
- "wordcraft-ui-egui",
+ "wordz-control-key",
+ "wordz-doc",
+ "wordz-engine",
+ "wordz-fonts",
+ "wordz-proof",
+ "wordz-ui-egui",
  "zbus",
 ]
 
 [[package]]
-name = "wordcraft-cli"
+name = "wordz-cli"
 version = "0.6.1"
 dependencies = [
  "serde_json",
- "wordcraft-doc",
- "wordcraft-engine",
- "wordcraft-mcp",
- "wordcraft-render",
- "wordcraft-zotero",
+ "wordz-doc",
+ "wordz-engine",
+ "wordz-mcp",
+ "wordz-render",
+ "wordz-zotero",
 ]
 
 [[package]]
-name = "wordcraft-control-key"
+name = "wordz-control-key"
 version = "0.6.1"
 
 [[package]]
-name = "wordcraft-doc"
+name = "wordz-doc"
 version = "0.6.1"
 dependencies = [
  "proptest",
@@ -5153,11 +5153,11 @@ dependencies = [
  "serde_json",
  "thiserror 2.0.21",
  "unicode-segmentation",
- "wordcraft-geom",
+ "wordz-geom",
 ]
 
 [[package]]
-name = "wordcraft-docbin"
+name = "wordz-docbin"
 version = "0.6.1"
 dependencies = [
  "cfb",
@@ -5167,12 +5167,12 @@ dependencies = [
  "proptest",
  "serde_json",
  "thiserror 2.0.21",
- "wordcraft-doc",
- "wordcraft-geom",
+ "wordz-doc",
+ "wordz-geom",
 ]
 
 [[package]]
-name = "wordcraft-docx"
+name = "wordz-docx"
 version = "0.6.1"
 dependencies = [
  "aes",
@@ -5187,14 +5187,14 @@ dependencies = [
  "sha1",
  "sha2",
  "thiserror 2.0.21",
- "wordcraft-doc",
- "wordcraft-geom",
+ "wordz-doc",
+ "wordz-geom",
  "zeroize",
  "zip",
 ]
 
 [[package]]
-name = "wordcraft-engine"
+name = "wordz-engine"
 version = "0.6.1"
 dependencies = [
  "image",
@@ -5205,22 +5205,22 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.21",
- "wordcraft-doc",
- "wordcraft-docbin",
- "wordcraft-docx",
- "wordcraft-fonts",
- "wordcraft-formats",
- "wordcraft-geom",
- "wordcraft-layout",
- "wordcraft-pdf",
- "wordcraft-proof",
- "wordcraft-render",
+ "wordz-doc",
+ "wordz-docbin",
+ "wordz-docx",
+ "wordz-fonts",
+ "wordz-formats",
+ "wordz-geom",
+ "wordz-layout",
+ "wordz-pdf",
+ "wordz-proof",
+ "wordz-render",
  "zeroize",
  "zip",
 ]
 
 [[package]]
-name = "wordcraft-fonts"
+name = "wordz-fonts"
 version = "0.6.1"
 dependencies = [
  "harfrust 0.13.3",
@@ -5233,27 +5233,27 @@ dependencies = [
 ]
 
 [[package]]
-name = "wordcraft-formats"
+name = "wordz-formats"
 version = "0.6.1"
 dependencies = [
  "image",
  "log",
  "proptest",
  "quick-xml",
- "wordcraft-doc",
- "wordcraft-geom",
+ "wordz-doc",
+ "wordz-geom",
  "zip",
 ]
 
 [[package]]
-name = "wordcraft-geom"
+name = "wordz-geom"
 version = "0.6.1"
 dependencies = [
  "serde",
 ]
 
 [[package]]
-name = "wordcraft-layout"
+name = "wordz-layout"
 version = "0.6.1"
 dependencies = [
  "image",
@@ -5265,26 +5265,26 @@ dependencies = [
  "unicode-bidi",
  "unicode-linebreak",
  "unicode-segmentation",
- "wordcraft-doc",
- "wordcraft-fonts",
- "wordcraft-geom",
- "wordcraft-proof",
+ "wordz-doc",
+ "wordz-fonts",
+ "wordz-geom",
+ "wordz-proof",
 ]
 
 [[package]]
-name = "wordcraft-mcp"
+name = "wordz-mcp"
 version = "0.6.1"
 dependencies = [
  "log",
  "serde_json",
- "wordcraft-control-key",
- "wordcraft-doc",
- "wordcraft-engine",
- "wordcraft-render",
+ "wordz-control-key",
+ "wordz-doc",
+ "wordz-engine",
+ "wordz-render",
 ]
 
 [[package]]
-name = "wordcraft-metafile"
+name = "wordz-metafile"
 version = "0.6.1"
 dependencies = [
  "kurbo",
@@ -5292,7 +5292,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "wordcraft-pdf"
+name = "wordz-pdf"
 version = "0.6.1"
 dependencies = [
  "hayro-cmap",
@@ -5304,15 +5304,15 @@ dependencies = [
  "kurbo",
  "log",
  "thiserror 2.0.21",
- "wordcraft-doc",
- "wordcraft-fonts",
- "wordcraft-geom",
- "wordcraft-layout",
- "wordcraft-metafile",
+ "wordz-doc",
+ "wordz-fonts",
+ "wordz-geom",
+ "wordz-layout",
+ "wordz-metafile",
 ]
 
 [[package]]
-name = "wordcraft-proof"
+name = "wordz-proof"
 version = "0.6.1"
 dependencies = [
  "log",
@@ -5321,21 +5321,21 @@ dependencies = [
 ]
 
 [[package]]
-name = "wordcraft-render"
+name = "wordz-render"
 version = "0.6.1"
 dependencies = [
  "image",
  "log",
  "vello_cpu 0.2.0",
- "wordcraft-doc",
- "wordcraft-fonts",
- "wordcraft-geom",
- "wordcraft-layout",
- "wordcraft-metafile",
+ "wordz-doc",
+ "wordz-fonts",
+ "wordz-geom",
+ "wordz-layout",
+ "wordz-metafile",
 ]
 
 [[package]]
-name = "wordcraft-ui-egui"
+name = "wordz-ui-egui"
 version = "0.6.1"
 dependencies = [
  "craft-ui",
@@ -5348,19 +5348,19 @@ dependencies = [
  "serde_json",
  "sys-locale",
  "toml",
- "wordcraft-doc",
- "wordcraft-engine",
- "wordcraft-fonts",
- "wordcraft-geom",
- "wordcraft-layout",
- "wordcraft-render",
- "wordcraft-zotero",
+ "wordz-doc",
+ "wordz-engine",
+ "wordz-fonts",
+ "wordz-geom",
+ "wordz-layout",
+ "wordz-render",
+ "wordz-zotero",
  "zbus",
  "zip",
 ]
 
 [[package]]
-name = "wordcraft-web"
+name = "wordz-web"
 version = "0.6.1"
 dependencies = [
  "eframe",
@@ -5372,24 +5372,24 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
- "wordcraft-doc",
- "wordcraft-engine",
- "wordcraft-fonts",
- "wordcraft-ui-egui",
+ "wordz-doc",
+ "wordz-engine",
+ "wordz-fonts",
+ "wordz-ui-egui",
 ]
 
 [[package]]
-name = "wordcraft-zotero"
+name = "wordz-zotero"
 version = "0.6.1"
 dependencies = [
  "log",
  "proptest",
  "serde_json",
  "thiserror 2.0.21",
- "wordcraft-doc",
- "wordcraft-docx",
- "wordcraft-engine",
- "wordcraft-formats",
+ "wordz-doc",
+ "wordz-docx",
+ "wordz-engine",
+ "wordz-formats",
 ]
 
 [[package]]

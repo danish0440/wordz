@@ -1,8 +1,8 @@
 //! Sprms → model properties, and style-chain resolution.
 
-use wordcraft_doc::Rgb;
-use wordcraft_doc::props::{Align, CharProps, Highlight, LineSpacing, ParaProps, TabAlign, TabLeader, TabStop, TextColor, Underline, VertAlign};
-use wordcraft_doc::styles::{Style, StyleKind, StyleSheet};
+use wordz_doc::Rgb;
+use wordz_doc::props::{Align, CharProps, Highlight, LineSpacing, ParaProps, TabAlign, TabLeader, TabStop, TextColor, Underline, VertAlign};
+use wordz_doc::styles::{Style, StyleKind, StyleSheet};
 
 use crate::sprm::{self, Prl, Toggle};
 

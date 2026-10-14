@@ -3,12 +3,12 @@
 
 use std::sync::Arc;
 
-use wordcraft_doc::numbering::ListKind;
-use wordcraft_doc::para::NoteKind;
-use wordcraft_doc::props::{Align, CharProps, NumRef, Rgb, TextColor};
-use wordcraft_doc::table::{Cell, Table};
-use wordcraft_doc::{Block, Comment, Document, InlineObject, Paragraph, PartKind, Revision, RevisionKind, para_block};
-use wordcraft_docx::{XmlKind, read_xml, sniff_xml, write_wordml2003};
+use wordz_doc::numbering::ListKind;
+use wordz_doc::para::NoteKind;
+use wordz_doc::props::{Align, CharProps, NumRef, Rgb, TextColor};
+use wordz_doc::table::{Cell, Table};
+use wordz_doc::{Block, Comment, Document, InlineObject, Paragraph, PartKind, Revision, RevisionKind, para_block};
+use wordz_docx::{XmlKind, read_xml, sniff_xml, write_wordml2003};
 
 fn tiny_png() -> Vec<u8> {
     let img = image::RgbaImage::from_fn(3, 2, |x, y| image::Rgba([x as u8 * 80, y as u8 * 120, 200, 255]));

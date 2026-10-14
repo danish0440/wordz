@@ -4,14 +4,14 @@
 
 use std::sync::Arc;
 
-use wordcraft_doc::numbering::{AbstractNum, Level, ListKind, Num, levels_for};
-use wordcraft_doc::para::{InlineObject, OBJ, PAGE_BREAK, Run};
-use wordcraft_doc::props::{
+use wordz_doc::numbering::{AbstractNum, Level, ListKind, Num, levels_for};
+use wordz_doc::para::{InlineObject, OBJ, PAGE_BREAK, Run};
+use wordz_doc::props::{
     Border, BorderStyle, Borders, CellProps, CharProps, NumRef, ParaProps, RowProps, TextColor, Underline, VMerge, VertAlign,
 };
-use wordcraft_doc::section::NumFormat;
-use wordcraft_doc::styles::{Style, StyleKind};
-use wordcraft_doc::{Align, Block, Blocks, Document, Paragraph, Rgb, Table, para_block};
+use wordz_doc::section::NumFormat;
+use wordz_doc::styles::{Style, StyleKind};
+use wordz_doc::{Align, Block, Blocks, Document, Paragraph, Rgb, Table, para_block};
 
 /// Font used for code spans and code blocks.
 pub const MONO_FONT: &str = "Courier New";
@@ -60,7 +60,7 @@ pub enum Inline {
     /// A chart or diagram known here only by its alt text: written where alt text has a place
     /// (an HTML or Markdown image), left out of editable formats so it never turns into body text.
     Figure(String),
-    /// An equation in the linear format WordCraft keeps them in (`x=(-b±√(b^2-4ac))/2a`). Formats
+    /// An equation in the linear format WordZ keeps them in (`x=(-b±√(b^2-4ac))/2a`). Formats
     /// without equations write `linear` as text.
     Equation {
         linear: String,
@@ -95,7 +95,7 @@ pub struct ListInfo {
 pub struct Spacing {
     pub before: Option<f32>,
     pub after: Option<f32>,
-    pub line: Option<wordcraft_doc::props::LineSpacing>,
+    pub line: Option<wordz_doc::props::LineSpacing>,
     pub left: Option<f32>,
     pub right: Option<f32>,
     /// First-line indent; negative = hanging.
@@ -111,7 +111,7 @@ pub struct Para {
     pub inlines: Vec<Inline>,
     pub spacing: Spacing,
     /// Borders the source puts on the paragraph itself (RTF `\brdrb`…).
-    pub borders: Option<wordcraft_doc::props::Borders>,
+    pub borders: Option<wordz_doc::props::Borders>,
 }
 
 impl Para {
@@ -143,13 +143,13 @@ impl Para {
         s
     }
     /// [`Self::text`] as it reads on screen: text set in a symbol font (Symbol, Wingdings…) as
-    /// its Unicode equivalents ([`wordcraft_doc::symbol_fonts`]), for plain-text export.
+    /// its Unicode equivalents ([`wordz_doc::symbol_fonts`]), for plain-text export.
     pub fn shown_text(&self) -> String {
         let mut s = String::new();
         for i in &self.inlines {
             match i {
                 Inline::Text(t, f) => match f.font.as_deref() {
-                    Some(font) if wordcraft_doc::symbol_fonts::is_symbol_font(font) => s.push_str(&wordcraft_doc::symbol_fonts::map_text(font, t)),
+                    Some(font) if wordz_doc::symbol_fonts::is_symbol_font(font) => s.push_str(&wordz_doc::symbol_fonts::map_text(font, t)),
                     _ => s.push_str(t),
                 },
                 Inline::Equation { linear: t, .. } => s.push_str(t),
@@ -204,7 +204,7 @@ pub struct Cell {
     pub header: bool,
     pub shading: Option<Rgb>,
     /// The cell's own borders (RTF `\clbrdr…`), drawn whatever the table's style.
-    pub borders: Option<wordcraft_doc::props::Borders>,
+    pub borders: Option<wordz_doc::props::Borders>,
 }
 
 impl Default for Cell {
@@ -537,11 +537,11 @@ impl Builder<'_> {
     }
 
     fn table(&mut self, t: &FTable, depth: usize) -> Option<Table> {
-        let rows: Vec<&Vec<Cell>> = t.rows.iter().filter(|r| !r.is_empty()).take(wordcraft_doc::table::MAX_ROWS).collect();
+        let rows: Vec<&Vec<Cell>> = t.rows.iter().filter(|r| !r.is_empty()).take(wordz_doc::table::MAX_ROWS).collect();
         if rows.is_empty() {
             return None;
         }
-        let cols = t.cols().clamp(1, wordcraft_doc::table::MAX_COLS);
+        let cols = t.cols().clamp(1, wordz_doc::table::MAX_COLS);
         let width = self.doc.last_section.text_width().max(72.0);
         let mut tb = Table::new(rows.len(), cols, width);
         if t.borderless {
@@ -552,10 +552,10 @@ impl Builder<'_> {
         }
         tb.rows.clear();
         for r in rows {
-            let mut row = wordcraft_doc::Row { props: RowProps::default(), cells: Vec::new(), controls: Default::default() };
+            let mut row = wordz_doc::Row { props: RowProps::default(), cells: Vec::new(), controls: Default::default() };
             row.props.header = !r.is_empty() && r.iter().all(|c| c.header);
             let mut g = 0usize;
-            for c in r.iter().take(wordcraft_doc::table::MAX_COLS) {
+            for c in r.iter().take(wordz_doc::table::MAX_COLS) {
                 let span = (c.colspan.clamp(1, 63) as usize).min(cols.saturating_sub(g).max(1));
                 let w: f32 = tb.grid.get(g..(g + span).min(tb.grid.len())).map(|s| s.iter().sum()).unwrap_or(72.0);
                 g += span;
@@ -570,14 +570,14 @@ impl Builder<'_> {
                 } else {
                     VMerge::None
                 };
-                row.cells.push(wordcraft_doc::Cell {
+                row.cells.push(wordz_doc::Cell {
                     props: CellProps { width: Some(w), span: span as u32, vmerge, shading: c.shading, borders: c.borders, ..Default::default() },
                     blocks,
                     controls: Default::default(),
                 });
             }
             if row.cells.is_empty() {
-                row.cells.push(wordcraft_doc::Cell::empty());
+                row.cells.push(wordz_doc::Cell::empty());
             }
             tb.rows.push(row);
         }
@@ -591,11 +591,11 @@ fn finite_or(v: f32, d: f32) -> f32 {
 
 /// Build a document from a flow.
 pub fn to_doc(flow: &Flow) -> Document {
-    to_doc_in(flow, wordcraft_doc::SectionProps::default())
+    to_doc_in(flow, wordz_doc::SectionProps::default())
 }
 
 /// [`to_doc`] on a page of the source's own size and margins (`section`), which tables size to.
-pub fn to_doc_in(flow: &Flow, section: wordcraft_doc::SectionProps) -> Document {
+pub fn to_doc_in(flow: &Flow, section: wordz_doc::SectionProps) -> Document {
     let mut doc = Document::new();
     doc.last_section = section;
     doc.numbering = Default::default();
@@ -809,7 +809,7 @@ pub fn flow_paras(doc: &Document, p: &Paragraph) -> Vec<Para> {
                     }
                     // The linear format is the shared form; an equation known only by its
                     // structure gets it from there.
-                    let linear = if linear.is_empty() { wordcraft_doc::math::to_linear(&math.nodes) } else { linear.clone() };
+                    let linear = if linear.is_empty() { wordz_doc::math::to_linear(&math.nodes) } else { linear.clone() };
                     out.inlines.push(Inline::Equation { linear, display: *display });
                 }
                 Some(InlineObject::BookmarkStart { name }) if name != "_GoBack" => {
@@ -878,7 +878,7 @@ fn flow_table(doc: &Document, t: &Table, depth: usize) -> FTable {
         rows.push(cells);
     }
     // Without a table style and without visible table or cell borders the table shows no grid.
-    let visible = |b: &Option<wordcraft_doc::props::Borders>| b.as_ref().is_some_and(|b| b.any_visible());
+    let visible = |b: &Option<wordz_doc::props::Borders>| b.as_ref().is_some_and(|b| b.any_visible());
     let borderless =
         t.props.style.is_none() && !visible(&t.props.borders) && t.rows.iter().flat_map(|r| &r.cells).all(|c| !visible(&c.props.borders));
     FTable { rows, widths: t.grid.clone(), borderless }
@@ -1063,8 +1063,8 @@ impl ListCounter {
         }
         match li.level % 3 {
             0 => format!("{n}."),
-            1 => format!("{}.", wordcraft_doc::section::letters(n)),
-            _ => format!("{}.", wordcraft_doc::section::roman(n)),
+            1 => format!("{}.", wordz_doc::section::letters(n)),
+            _ => format!("{}.", wordz_doc::section::roman(n)),
         }
     }
 }

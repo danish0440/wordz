@@ -1,17 +1,17 @@
 //! Native print onboarding preserves engine PDF generation and submits the selected settings.
 use serde_json::json;
 use std::{cell::RefCell, rc::Rc};
-use wordcraft_engine::Session;
-use wordcraft_ui_egui::printing::{Duplex, Feedback, Printer};
-use wordcraft_ui_egui::{Services, WordApp};
+use wordz_engine::Session;
+use wordz_ui_egui::printing::{Duplex, Feedback, Printer};
+use wordz_ui_egui::{Services, WordApp};
 
 #[test]
 fn control_print_discovery_reports_metadata_without_host_side_effects() {
     use std::cell::Cell;
-    use wordcraft_ui_egui::control::{ControlRequest, Outcome, handle};
+    use wordz_ui_egui::control::{ControlRequest, Outcome, handle};
     let discoveries = Rc::new(Cell::new(0));
     let submissions = Rc::new(Cell::new(0));
-    let mut app = WordApp::new(Session::new(wordcraft_doc::Document::new()), Services::default());
+    let mut app = WordApp::new(Session::new(wordz_doc::Document::new()), Services::default());
     let observed = discoveries.clone();
     app.services.printers = Some(Box::new(move || {
         observed.set(observed.get() + 1);
@@ -57,7 +57,7 @@ fn control_print_discovery_reports_metadata_without_host_side_effects() {
 
 #[test]
 fn native_print_uses_selected_settings_and_reports_spool_errors() {
-    let mut app = WordApp::new(Session::new(wordcraft_doc::Document::new()), Services::default());
+    let mut app = WordApp::new(Session::new(wordz_doc::Document::new()), Services::default());
     app.run("text.insert", json!({"text": "A document to print"})).unwrap();
     let jobs = Rc::new(RefCell::new(Vec::new()));
     let observed = jobs.clone();
@@ -92,7 +92,7 @@ fn native_print_uses_selected_settings_and_reports_spool_errors() {
 #[test]
 fn print_settings_are_visible_in_a_narrow_window() {
     use egui_kittest::kittest::{NodeT, Queryable};
-    let mut app = WordApp::new(Session::new(wordcraft_doc::Document::new()), Services::default());
+    let mut app = WordApp::new(Session::new(wordz_doc::Document::new()), Services::default());
     app.run("text.insert", json!({"text": "A document to print"})).unwrap();
     app.services.printers = Some(Box::new(|| {
         let (sender, receiver) = std::sync::mpsc::channel();
@@ -124,7 +124,7 @@ fn print_settings_are_visible_in_a_narrow_window() {
 
 #[test]
 fn invalid_print_settings_are_rejected_without_partial_changes() {
-    let mut app = WordApp::new(Session::new(wordcraft_doc::Document::new()), Services::default());
+    let mut app = WordApp::new(Session::new(wordz_doc::Document::new()), Services::default());
     app.printing.printers.push(Printer { name: "Queue".into(), default: true });
     let before = app.run("ui.printSettings", json!({})).unwrap();
     for params in [
@@ -147,7 +147,7 @@ fn invalid_print_settings_are_rejected_without_partial_changes() {
 
 #[test]
 fn repeated_fast_jobs_each_surface_an_identical_receipt() {
-    let mut app = WordApp::new(Session::new(wordcraft_doc::Document::new()), Services::default());
+    let mut app = WordApp::new(Session::new(wordz_doc::Document::new()), Services::default());
     app.printing.printers.push(Printer { name: "Queue".into(), default: true });
     app.run("ui.printSettings", json!({"printer":"Queue"})).unwrap();
     app.services.print_native = Some(Box::new(|_, _, _| {
@@ -170,7 +170,7 @@ fn repeated_fast_jobs_each_surface_an_identical_receipt() {
 
 #[test]
 fn native_ranges_and_parity_do_not_duplicate_spooler_copies() {
-    let mut app = WordApp::new(Session::new(wordcraft_doc::Document::new()), Services::default());
+    let mut app = WordApp::new(Session::new(wordz_doc::Document::new()), Services::default());
     for page in 1..=3 {
         app.run("text.insert", json!({"text":format!("Distinct page {page}")})).unwrap();
         if page < 3 {

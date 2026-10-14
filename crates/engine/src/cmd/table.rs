@@ -1,10 +1,10 @@
 //! Table Design and Table Layout tabs.
 
 use serde_json::{Value, json};
-use wordcraft_doc::collate::{SortKey, sort_key};
-use wordcraft_doc::locale_number::{format_number, parse_number};
-use wordcraft_doc::props::{Align, Border, BorderStyle, Borders, HeightRule, Rgb, TextDirection, VAlign};
-use wordcraft_doc::{Block, Document, Paragraph, Path, Pos, StoryRef, Table, para_block};
+use wordz_doc::collate::{SortKey, sort_key};
+use wordz_doc::locale_number::{format_number, parse_number};
+use wordz_doc::props::{Align, Border, BorderStyle, Borders, HeightRule, Rgb, TextDirection, VAlign};
+use wordz_doc::{Block, Document, Paragraph, Path, Pos, StoryRef, Table, para_block};
 
 use super::sel_result;
 use crate::{CmdError, CmdResult, CommandSpec, Selection, Session, p};
@@ -154,7 +154,7 @@ pub fn specs() -> Vec<CommandSpec> {
             }
             let set = |x: Option<&str>, cur: &Option<String>| match x {
                 Some(x) if x.trim().is_empty() => None,
-                Some(x) => Some(wordcraft_doc::para::cap_alt(x)),
+                Some(x) => Some(wordz_doc::para::cap_alt(x)),
                 None => cur.clone(),
             };
             with_table(s, |t| {
@@ -212,7 +212,7 @@ fn autofit(s: &mut Session, v: &Value) -> CmdResult {
         "contents" => {
             let t = s.doc.table(story, &tp).ok_or_else(|| CmdError::Disabled("the cursor isn't in a table".into()))?;
             let avail = (tw - t.props.indent.filter(|i| i.is_finite()).unwrap_or(0.0).max(0.0)).max(72.0);
-            let widths = wordcraft_layout::autofit_widths(&wordcraft_layout::measure_table_columns(&s.doc, t), avail);
+            let widths = wordz_layout::autofit_widths(&wordz_layout::measure_table_columns(&s.doc, t), avail);
             with_table(s, |t| {
                 t.props.fixed = false;
                 t.props.width = None;
@@ -410,7 +410,7 @@ fn selected_cells(s: &Session) -> Vec<(usize, usize)> {
     v
 }
 
-fn with_cells(s: &mut Session, f: impl Fn(&mut wordcraft_doc::Cell)) -> CmdResult {
+fn with_cells(s: &mut Session, f: impl Fn(&mut wordz_doc::Cell)) -> CmdResult {
     let (tp, _, _) = cell(s)?;
     let cells = selected_cells(s);
     let t = s.doc.table_mut(s.sel.focus.story, &tp)?;
@@ -519,7 +519,7 @@ fn del_col(s: &mut Session, _: &Value) -> CmdResult {
     let mut cols = std::collections::BTreeSet::new();
     for (rr, cc) in cells {
         let g = t.grid_col(rr, cc);
-        let span = t.rows.get(rr).and_then(|x| x.cells.get(cc)).map_or(1, wordcraft_doc::Cell::span);
+        let span = t.rows.get(rr).and_then(|x| x.cells.get(cc)).map_or(1, wordz_doc::Cell::span);
         cols.extend(g..g.saturating_add(span).min(t.grid.len()));
     }
     if cols.is_empty() {
@@ -573,7 +573,7 @@ fn split_table(s: &mut Session, _: &Value) -> CmdResult {
     let tail_rows = t.rows.split_off(r);
     // Content controls closing after the table now close after its second part.
     let close = std::mem::take(&mut t.controls.close);
-    let controls = wordcraft_doc::ControlWrap { open: Vec::new(), close };
+    let controls = wordz_doc::ControlWrap { open: Vec::new(), close };
     let tail = Table { props: t.props.clone(), grid: t.grid.clone(), rows: tail_rows, controls };
     let after = tp.with_last(tp.last() + 1);
     s.doc.insert_block(story, &after, Block::Para(Paragraph::new()))?;
@@ -626,12 +626,12 @@ fn borders(s: &mut Session, v: &Value) -> CmdResult {
     })
 }
 
-fn cell_text(c: &wordcraft_doc::Cell) -> String {
+fn cell_text(c: &wordz_doc::Cell) -> String {
     c.blocks.iter().filter_map(|b| b.as_para().map(|p| p.plain_text())).collect::<Vec<_>>().join("\n")
 }
 
 /// The language of a cell's text: that of its first paragraph with text.
-fn cell_lang(doc: &wordcraft_doc::Document, c: &wordcraft_doc::Cell) -> Option<String> {
+fn cell_lang(doc: &wordz_doc::Document, c: &wordz_doc::Cell) -> Option<String> {
     c.blocks.iter().filter_map(|b| b.as_para()).find(|p| !p.plain_text().trim().is_empty()).and_then(|p| super::para_lang(doc, p))
 }
 
@@ -703,7 +703,7 @@ fn formula(s: &mut Session, v: &Value) -> CmdResult {
     let t = s.doc.table(s.sel.focus.story, &tp).cloned().ok_or_else(|| CmdError::Failed("no table".into()))?;
     let story = s.sel.focus.story;
     // Each cell's number is read in that cell's language (`3,50` in Polish is three and a half).
-    let sources: Vec<&wordcraft_doc::Cell> = if f.contains("LEFT") {
+    let sources: Vec<&wordz_doc::Cell> = if f.contains("LEFT") {
         t.rows.get(r).map(|row| row.cells.iter().take(c).collect()).unwrap_or_default()
     } else {
         t.rows.iter().take(r).filter_map(|row| row.cells.get(c)).collect()
@@ -740,7 +740,7 @@ fn formula(s: &mut Session, v: &Value) -> CmdResult {
     let at = s.sel.focus.clone();
     let end = s.doc.insert_object(
         &at,
-        wordcraft_doc::InlineObject::Field { instr: f.clone(), result: text.clone(), locked: false, code: false },
+        wordz_doc::InlineObject::Field { instr: f.clone(), result: text.clone(), locked: false, code: false },
         &props,
     )?;
     s.sel = Selection::caret(end);
@@ -762,7 +762,7 @@ fn select_cells(s: &mut Session, tp: &Path, which: Option<(usize, Option<usize>)
 /// The grid columns cell `c` of row `r` covers (first, last).
 pub(super) fn grid_cols(t: &Table, r: usize, c: usize) -> (usize, usize) {
     let g = t.grid_col(r, c);
-    let span = t.rows.get(r).and_then(|row| row.cells.get(c)).map_or(1, wordcraft_doc::Cell::span);
+    let span = t.rows.get(r).and_then(|row| row.cells.get(c)).map_or(1, wordz_doc::Cell::span);
     (g, g + span - 1)
 }
 

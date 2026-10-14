@@ -258,12 +258,12 @@ fn is_false(v: &bool) -> bool {
 
 impl Float {
     /// The rotation and flips, the angle normalised to `0..360` (a NaN angle is no rotation).
-    pub fn spin(&self) -> wordcraft_geom::Spin {
-        wordcraft_geom::Spin::new(self.rot, self.flip_h, self.flip_v)
+    pub fn spin(&self) -> wordz_geom::Spin {
+        wordz_geom::Spin::new(self.rot, self.flip_h, self.flip_v)
     }
     /// Set the rotation and flips (the angle normalised).
-    pub fn set_spin(&mut self, s: wordcraft_geom::Spin) {
-        self.rot = wordcraft_geom::normalize_degrees(s.deg);
+    pub fn set_spin(&mut self, s: wordz_geom::Spin) {
+        self.rot = wordz_geom::normalize_degrees(s.deg);
         self.flip_h = s.flip_h;
         self.flip_v = s.flip_v;
     }
@@ -271,7 +271,7 @@ impl Float {
     /// rotated object takes beyond its frame (zero unrotated; negative where the turned object
     /// is narrower than its frame, as a wide picture turned 90° is).
     pub fn spin_pad(&self, w: f32, h: f32) -> (f32, f32) {
-        let (w, h) = (wordcraft_geom::finite(w).clamp(0.0, 4000.0), wordcraft_geom::finite(h).clamp(0.0, 4000.0));
+        let (w, h) = (wordz_geom::finite(w).clamp(0.0, 4000.0), wordz_geom::finite(h).clamp(0.0, 4000.0));
         let (bw, bh) = self.spin().extent(w, h);
         ((bw - w) / 2.0, (bh - h) / 2.0)
     }

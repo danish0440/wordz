@@ -1,18 +1,18 @@
 [package]
-name = "wordcraft-layout"
+name = "wordz-layout"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "WordCraft layout: shaping, line breaking, tabs, lists, tables, pagination, headers/footers, hit testing"
+description = "WordZ layout: shaping, line breaking, tabs, lists, tables, pagination, headers/footers, hit testing"
 
 [lints]
 workspace = true
 
 [dependencies]
-wordcraft-geom = { workspace = true }
-wordcraft-doc = { workspace = true }
-wordcraft-fonts = { workspace = true }
-wordcraft-proof = { workspace = true }
+wordz-geom = { workspace = true }
+wordz-doc = { workspace = true }
+wordz-fonts = { workspace = true }
+wordz-proof = { workspace = true }
 kurbo = { workspace = true }
 unicode-bidi = { workspace = true }
 unicode-linebreak = { workspace = true }

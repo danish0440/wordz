@@ -1,4 +1,4 @@
-//! WordCraft rasteriser: draws a page's display list with vello_cpu.
+//! WordZ rasteriser: draws a page's display list with vello_cpu.
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
 use std::collections::HashMap;
@@ -7,14 +7,14 @@ use std::sync::{Arc, Mutex};
 use vello_cpu::kurbo::{self, Affine, BezPath, Shape};
 use vello_cpu::peniko;
 use vello_cpu::{Pixmap, RenderContext, Resources};
-use wordcraft_doc::Document;
-use wordcraft_doc::para::ShapeKind;
-use wordcraft_doc::props::Rgb;
-use wordcraft_fonts::FontDb;
-use wordcraft_layout::Page;
-use wordcraft_layout::display::{DisplayOptions, Draw, Stroke, page_display};
-use wordcraft_layout::wordart::ArtPaint;
-use wordcraft_metafile::{Item, Picture, PlacedItem, Seg};
+use wordz_doc::Document;
+use wordz_doc::para::ShapeKind;
+use wordz_doc::props::Rgb;
+use wordz_fonts::FontDb;
+use wordz_layout::Page;
+use wordz_layout::display::{DisplayOptions, Draw, Stroke, page_display};
+use wordz_layout::wordart::ArtPaint;
+use wordz_metafile::{Item, Picture, PlacedItem, Seg};
 
 pub mod icon_lib;
 
@@ -204,10 +204,10 @@ pub fn image_size(bytes: &[u8]) -> Option<(u32, u32)> {
 /// extension it is stored under (`"wmf"` or `"emf"`), or None for anything else (#802). Very large
 /// frames are scaled down to 22 inches on the longer side, keeping the shape.
 pub fn metafile_size(bytes: &[u8]) -> Option<(f32, f32, &'static str)> {
-    if !wordcraft_metafile::is_metafile(bytes) {
+    if !wordz_metafile::is_metafile(bytes) {
         return None;
     }
-    let pic = wordcraft_metafile::parse(bytes).ok()?;
+    let pic = wordz_metafile::parse(bytes).ok()?;
     let (w, h) = (pic.width, pic.height);
     if !(w.is_finite() && h.is_finite() && w > 0.0 && h > 0.0) {
         return None;
@@ -246,7 +246,7 @@ impl Vector {
 /// the caller falls back to the raster path (and the grey box).
 fn vector_for(doc: &Document, key: &str) -> Option<Arc<Vector>> {
     let bytes = doc.media.get(key)?;
-    if !wordcraft_metafile::is_metafile(bytes) {
+    if !wordz_metafile::is_metafile(bytes) {
         return None;
     }
     if let Some(v) = lock(vectors()).get(key, bytes) {
@@ -263,7 +263,7 @@ fn vector_for(doc: &Document, key: &str) -> Option<Arc<Vector>> {
 
 /// Parses a metafile and decodes its bitmaps. None when the picture has no usable size.
 fn build_vector(bytes: &[u8]) -> Option<Vector> {
-    let mut pic = wordcraft_metafile::parse(bytes).ok()?;
+    let mut pic = wordz_metafile::parse(bytes).ok()?;
     if !pic.has_size() {
         return None;
     }
@@ -441,12 +441,12 @@ pub fn background_at(doc: &Document, page: &Page, opts: &RenderOptions, x: f32, 
     }
     let mut bg = [paper.0 as f32, paper.1 as f32, paper.2 as f32];
     let items = page_display(doc, page, &opts.display);
-    blend_backgrounds(&items, wordcraft_geom::Point::new(x, y), opts, &mut bg, 0);
+    blend_backgrounds(&items, wordz_geom::Point::new(x, y), opts, &mut bg, 0);
     let c = |v: f32| v.round().clamp(0.0, 255.0) as u8;
     Rgb(c(bg[0]), c(bg[1]), c(bg[2]))
 }
 
-fn blend_backgrounds(items: &[Draw], p: wordcraft_geom::Point, opts: &RenderOptions, bg: &mut [f32; 3], depth: u32) {
+fn blend_backgrounds(items: &[Draw], p: wordz_geom::Point, opts: &RenderOptions, bg: &mut [f32; 3], depth: u32) {
     if depth > 16 {
         return;
     }
@@ -485,7 +485,7 @@ fn blend_backgrounds(items: &[Draw], p: wordcraft_geom::Point, opts: &RenderOpti
 /// `scale` pixels per point, starting `margin` points in with the baseline `margin` + the face's
 /// ascent down: a font list entry. Outlines come straight from the face, not the shared outline
 /// cache, so a face read just for the preview leaves nothing behind once dropped (#848).
-pub fn render_text_line(face: &wordcraft_fonts::FontFace, text: &str, size: f32, w: f32, h: f32, margin: f32, scale: f32) -> Rendered {
+pub fn render_text_line(face: &wordz_fonts::FontFace, text: &str, size: f32, w: f32, h: f32, margin: f32, scale: f32) -> Rendered {
     let fin = |v: f32, d: f32| if v.is_finite() && v >= 0.0 { v } else { d };
     let (size, w, h, margin) = (fin(size, 12.0).min(1000.0) as f64, fin(w, 1.0), fin(h, 1.0), fin(margin, 0.0).min(1000.0) as f64);
     let scale = if scale.is_finite() && scale > 0.0 { scale.min(16.0) } else { 1.0 };
@@ -501,7 +501,7 @@ pub fn render_text_line(face: &wordcraft_fonts::FontFace, text: &str, size: f32,
     let ascent = if face.ascent.is_finite() { face.ascent.clamp(0.0, upem * 4.0) } else { upem * 0.8 };
     let baseline = margin + ascent * k;
     let mut x = margin;
-    for g in wordcraft_fonts::shape(face, text, &[], |c| c) {
+    for g in wordz_fonts::shape(face, text, &[], |c| c) {
         let o = face.glyph_outline(g.gid);
         ctx.set_transform(view * Affine::translate((x + g.x_offset as f64 * k, baseline - g.y_offset as f64 * k)) * Affine::scale(k));
         ctx.fill_path(&o);
@@ -519,10 +519,10 @@ pub fn render_text_line(face: &wordcraft_fonts::FontFace, text: &str, size: f32,
     Rendered { width: w16 as u32, height: h16 as u32, pixels }
 }
 
-fn draw_watermark(ctx: &mut RenderContext, view: Affine, page: &Page, wm: &wordcraft_doc::Watermark, opts: &RenderOptions) {
-    let r = wordcraft_fonts::word::resolve(&wm.font, false, false);
+fn draw_watermark(ctx: &mut RenderContext, view: Affine, page: &Page, wm: &wordz_doc::Watermark, opts: &RenderOptions) {
+    let r = wordz_fonts::word::resolve(&wm.font, false, false);
     let face = r.face;
-    let glyphs = wordcraft_fonts::shape(&face, &wm.text, &[], |c| c);
+    let glyphs = wordz_fonts::shape(&face, &wm.text, &[], |c| c);
     let upem = face.upem.max(1.0);
     let raw_w: f64 = glyphs.iter().map(|g| g.x_advance as f64).sum::<f64>() / upem;
     if raw_w <= 0.0 {
@@ -671,11 +671,11 @@ fn draw(ctx: &mut RenderContext, doc: &Document, it: &Draw, view: Affine, visibl
             }
         }
         Draw::Mark { x, baseline, size, ch, color: mark } => {
-            let face = wordcraft_fonts::word::resolve("Source Sans 3", false, false).face;
+            let face = wordz_fonts::word::resolve("Source Sans 3", false, false).face;
             let gid = face.glyph_for(*ch);
             let face = if gid == 0 {
                 match FontDb::global().fallback_for(*ch, face.id()) {
-                    Some(f) => wordcraft_fonts::FaceRef::of(&f),
+                    Some(f) => wordz_fonts::FaceRef::of(&f),
                     None => return,
                 }
             } else {
@@ -689,7 +689,7 @@ fn draw(ctx: &mut RenderContext, doc: &Document, it: &Draw, view: Affine, visibl
             ctx.fill_path(&o);
         }
         Draw::MarkText { x, baseline, size, text } => {
-            let base_face = wordcraft_fonts::word::resolve("Source Sans 3", false, false).face;
+            let base_face = wordz_fonts::word::resolve("Source Sans 3", false, false).face;
             ctx.set_paint(color(opts.ink(opts.mark_color), 0.9));
             let mut gx = *x as f64;
             for ch in text.chars() {
@@ -697,7 +697,7 @@ fn draw(ctx: &mut RenderContext, doc: &Document, it: &Draw, view: Affine, visibl
                 if face.glyph_for(ch) == 0
                     && let Some(f) = FontDb::global().fallback_for(ch, face.id())
                 {
-                    face = wordcraft_fonts::FaceRef::of(&f);
+                    face = wordz_fonts::FaceRef::of(&f);
                 }
                 let gid = face.glyph_for(ch);
                 let k = *size as f64 / face.upem.max(1.0);
@@ -747,7 +747,7 @@ fn draw(ctx: &mut RenderContext, doc: &Document, it: &Draw, view: Affine, visibl
             }
         }
         Draw::Path { segs, fill, stroke, stroke_width } => {
-            let path = wordcraft_layout::display::seg_path(segs);
+            let path = wordz_layout::display::seg_path(segs);
             if path.elements().is_empty() {
                 return;
             }
@@ -765,12 +765,12 @@ fn draw(ctx: &mut RenderContext, doc: &Document, it: &Draw, view: Affine, visibl
             }
         }
         Draw::Art { path, fx, color: c, alpha } => {
-            let Some(b) = wordcraft_layout::wordart::path_box(path) else { return };
+            let Some(b) = wordz_layout::wordart::path_box(path) else { return };
             if !b.inflate(200.0, 200.0).overlaps(*visible) {
                 return;
             }
             ctx.set_transform(view);
-            for l in wordcraft_layout::wordart::art_layers(path, fx, *c, *alpha) {
+            for l in wordz_layout::wordart::art_layers(path, fx, *c, *alpha) {
                 match &l.paint {
                     ArtPaint::Solid(c, a) => ctx.set_paint(color(opts.ink(*c), *a)),
                     ArtPaint::Linear { p0, p1, stops } => {
@@ -825,13 +825,13 @@ fn draw(ctx: &mut RenderContext, doc: &Document, it: &Draw, view: Affine, visibl
                 };
                 if let Some(sh) = fx.shadow {
                     let (dx, dy) = sh.offset();
-                    for (g, a) in wordcraft_doc::effects::bands(-sh.blur / 2.0, sh.blur / 2.0, sh.opacity()) {
+                    for (g, a) in wordz_doc::effects::bands(-sh.blur / 2.0, sh.blur / 2.0, sh.opacity()) {
                         ctx.set_paint(color(opts.ink(sh.color), a));
                         silhouette(ctx, g, kurbo::Vec2::new(dx as f64, dy as f64));
                     }
                 }
                 if let Some(gl) = fx.glow {
-                    for (g, a) in wordcraft_doc::effects::bands(0.0, gl.size, gl.opacity()) {
+                    for (g, a) in wordz_doc::effects::bands(0.0, gl.size, gl.opacity()) {
                         ctx.set_paint(color(opts.ink(gl.color), a));
                         silhouette(ctx, g, kurbo::Vec2::ZERO);
                     }
@@ -840,7 +840,7 @@ fn draw(ctx: &mut RenderContext, doc: &Document, it: &Draw, view: Affine, visibl
             // Soft edges: the fill fades out toward the outline (which fades with it).
             if let (Some(rad), Some(f), true) = (fx.soft_edge, fill, can_fill) {
                 let rad = rad.min(rect.w.min(rect.h) / 2.0).max(0.0);
-                for (g, a) in wordcraft_doc::effects::bands(-rad, 0.0, 1.0) {
+                for (g, a) in wordz_doc::effects::bands(-rad, 0.0, 1.0) {
                     let rr = r.inflate(g as f64, g as f64);
                     if rr.width() > 0.0 && rr.height() > 0.0 {
                         ctx.set_paint(color(opts.ink(*f), a));
@@ -1015,14 +1015,14 @@ pub fn render_items(doc: &Document, items: &[Draw], x: f32, y: f32, w: f32, h: f
 #[cfg(test)]
 mod tests {
     use super::*;
-    use wordcraft_layout::{LayoutCache, LayoutOptions, layout};
+    use wordz_layout::{LayoutCache, LayoutOptions, layout};
 
     /// #299: the caret's background is the page colour, a highlight, or the dark page.
     #[test]
     fn background_at_caret_follows_page_colour_highlight_and_dark_mode() {
-        use wordcraft_doc::Pos;
-        use wordcraft_doc::props::Highlight;
-        let mut d = Document::from_text("Hello WordCraft");
+        use wordz_doc::Pos;
+        use wordz_doc::props::Highlight;
+        let mut d = Document::from_text("Hello WordZ");
         let mid = |d: &Document, off: usize| {
             let l = layout(d, &mut LayoutCache::new(), &LayoutOptions::default());
             let c = l.caret_on(&Pos::body(0, off), 0).unwrap();
@@ -1051,7 +1051,7 @@ mod tests {
     fn background_follows_a_shapes_outline_not_its_box() {
         let opts = RenderOptions::default();
         let ellipse = Draw::Shape {
-            rect: wordcraft_geom::Rect::new(100.0, 100.0, 200.0, 100.0),
+            rect: wordz_geom::Rect::new(100.0, 100.0, 200.0, 100.0),
             kind: ShapeKind::Ellipse,
             fill: Some(Rgb::BLACK),
             stroke: None,
@@ -1060,7 +1060,7 @@ mod tests {
         };
         let at = |x: f32, y: f32| {
             let mut bg = [255.0; 3];
-            blend_backgrounds(std::slice::from_ref(&ellipse), wordcraft_geom::Point::new(x, y), &opts, &mut bg, 0);
+            blend_backgrounds(std::slice::from_ref(&ellipse), wordz_geom::Point::new(x, y), &opts, &mut bg, 0);
             bg
         };
         assert_eq!(at(200.0, 150.0), [0.0; 3], "the centre is the fill");
@@ -1070,7 +1070,7 @@ mod tests {
 
     #[test]
     fn renders_text_dark_pixels() {
-        let d = Document::from_text("Hello WordCraft");
+        let d = Document::from_text("Hello WordZ");
         let l = layout(&d, &mut LayoutCache::new(), &LayoutOptions::default());
         let img = render_page(&d, &l.pages[0], 1.0, &RenderOptions::default());
         assert_eq!((img.width, img.height), (612, 792));
@@ -1085,13 +1085,13 @@ mod tests {
     /// cell, not across it.
     #[test]
     fn turned_cell_text_is_painted_turned() {
-        use wordcraft_doc::props::TextDirection;
+        use wordz_doc::props::TextDirection;
         let ink = |dir: TextDirection| {
             let mut d = Document::from_text("before\nafter");
-            let mut t = wordcraft_doc::Table::new(1, 2, 400.0);
-            t.rows[0].cells[0].blocks = vec![wordcraft_doc::para_block(wordcraft_doc::Paragraph::with_text("WWWWWWWWWWWW", Default::default()))];
+            let mut t = wordz_doc::Table::new(1, 2, 400.0);
+            t.rows[0].cells[0].blocks = vec![wordz_doc::para_block(wordz_doc::Paragraph::with_text("WWWWWWWWWWWW", Default::default()))];
             t.rows[0].cells[0].props.text_direction = dir;
-            d.insert_block(wordcraft_doc::StoryRef::Body, &wordcraft_doc::Path::top(1), wordcraft_doc::Block::Table(t)).unwrap();
+            d.insert_block(wordz_doc::StoryRef::Body, &wordz_doc::Path::top(1), wordz_doc::Block::Table(t)).unwrap();
             let l = layout(&d, &mut LayoutCache::new(), &LayoutOptions::default());
             let img = render_page(&d, &l.pages[0], 1.0, &RenderOptions::default());
             // Dark pixels inside the first cell (x 72..272, clear of its borders), well below
@@ -1107,8 +1107,8 @@ mod tests {
     /// cast to, and none on the other; a glow surrounds it.
     #[test]
     fn shape_shadow_is_cast_offset_from_the_shape() {
-        use wordcraft_doc::effects::{Glow, Shadow, ShapeEffects};
-        use wordcraft_doc::para::InlineObject;
+        use wordz_doc::effects::{Glow, Shadow, ShapeEffects};
+        use wordz_doc::para::InlineObject;
         let draw = |effects: ShapeEffects| {
             let mut d = Document::from_text("");
             let shape = InlineObject::Shape {
@@ -1124,7 +1124,7 @@ mod tests {
                 effects,
                 extra: Default::default(),
             };
-            let at = wordcraft_doc::Pos { story: wordcraft_doc::StoryRef::Body, path: wordcraft_doc::Path::top(0), off: 0 };
+            let at = wordz_doc::Pos { story: wordz_doc::StoryRef::Body, path: wordz_doc::Path::top(0), off: 0 };
             d.insert_object(&at, shape, &Default::default()).unwrap();
             let l = layout(&d, &mut LayoutCache::new(), &LayoutOptions::default());
             render_page(&d, &l.pages[0], 1.0, &RenderOptions::default())
@@ -1211,8 +1211,8 @@ mod tests {
             .write_to(&mut std::io::Cursor::new(&mut png), image::ImageFormat::Png)
             .unwrap();
         let media = d.add_media(png, "png");
-        let mut hp = wordcraft_doc::Paragraph::new();
-        let obj = wordcraft_doc::para::InlineObject::Image {
+        let mut hp = wordz_doc::Paragraph::new();
+        let obj = wordz_doc::para::InlineObject::Image {
             media,
             w: 40.0,
             h: 40.0,
@@ -1222,7 +1222,7 @@ mod tests {
             ole: None,
         };
         hp.insert_object(0, obj, &Default::default()).unwrap();
-        let id = d.add_part(wordcraft_doc::PartKind::Header, vec![wordcraft_doc::para_block(hp)]);
+        let id = d.add_part(wordz_doc::PartKind::Header, vec![wordz_doc::para_block(hp)]);
         d.last_section.headers.default = Some(id);
         let l = layout(&d, &mut LayoutCache::new(), &LayoutOptions::default());
         let opts = RenderOptions::default();
@@ -1238,7 +1238,7 @@ mod tests {
         // Pure hues keep their colour; dark blue turns light blue.
         assert_eq!(invert_lightness(Rgb(255, 0, 0)), Rgb(255, 0, 0));
         assert_eq!(invert_lightness(Rgb(0, 0, 0x80)), Rgb(0x7F, 0x7F, 0xFF));
-        let d = Document::from_text("Hello WordCraft");
+        let d = Document::from_text("Hello WordZ");
         let l = layout(&d, &mut LayoutCache::new(), &LayoutOptions::default());
         let opts = RenderOptions { dark: true, ..Default::default() };
         assert_eq!(opts.ink(Rgb::WHITE), Rgb(DARK_PAPER, DARK_PAPER, DARK_PAPER));
@@ -1282,8 +1282,8 @@ mod tests {
     fn metafile_picture_is_drawn_as_vectors() {
         let mut d = Document::new();
         let media = d.add_media(red_right_half_emf(), "emf");
-        let mut p = wordcraft_doc::Paragraph::new();
-        let obj = wordcraft_doc::para::InlineObject::Image {
+        let mut p = wordz_doc::Paragraph::new();
+        let obj = wordz_doc::para::InlineObject::Image {
             media,
             w: 70.0,
             h: 70.0,
@@ -1293,7 +1293,7 @@ mod tests {
             ole: None,
         };
         p.insert_object(0, obj, &Default::default()).unwrap();
-        d.body = vec![wordcraft_doc::para_block(p)];
+        d.body = vec![wordz_doc::para_block(p)];
         let l = layout(&d, &mut LayoutCache::new(), &LayoutOptions::default());
         let opts = RenderOptions::default();
         let rect = page_display(&d, &l.pages[0], &opts.display)
@@ -1318,8 +1318,8 @@ mod tests {
         emf.extend([emf_rec(27, &le32(&[0, 50])), emf_rec(54, &le32(&[100, 50])), emf_rec(14, &[0; 12])].concat());
         let mut d = Document::new();
         let media = d.add_media(emf, "emf");
-        let mut p = wordcraft_doc::Paragraph::new();
-        let obj = wordcraft_doc::para::InlineObject::Image {
+        let mut p = wordz_doc::Paragraph::new();
+        let obj = wordz_doc::para::InlineObject::Image {
             media,
             w: 70.0,
             h: 70.0,
@@ -1329,7 +1329,7 @@ mod tests {
             ole: None,
         };
         p.insert_object(0, obj, &Default::default()).unwrap();
-        d.body = vec![wordcraft_doc::para_block(p)];
+        d.body = vec![wordz_doc::para_block(p)];
         let l = layout(&d, &mut LayoutCache::new(), &LayoutOptions::default());
         let opts = RenderOptions::default();
         let rect = page_display(&d, &l.pages[0], &opts.display)
@@ -1352,8 +1352,8 @@ mod tests {
         let mut d = Document::new();
         // The header alone has no records, so the metafile does not parse.
         let media = d.add_media(red_right_half_emf()[..88].to_vec(), "emf");
-        let mut p = wordcraft_doc::Paragraph::new();
-        let obj = wordcraft_doc::para::InlineObject::Image {
+        let mut p = wordz_doc::Paragraph::new();
+        let obj = wordz_doc::para::InlineObject::Image {
             media,
             w: 70.0,
             h: 70.0,
@@ -1363,7 +1363,7 @@ mod tests {
             ole: None,
         };
         p.insert_object(0, obj, &Default::default()).unwrap();
-        d.body = vec![wordcraft_doc::para_block(p)];
+        d.body = vec![wordz_doc::para_block(p)];
         let l = layout(&d, &mut LayoutCache::new(), &LayoutOptions::default());
         let opts = RenderOptions::default();
         let rect = page_display(&d, &l.pages[0], &opts.display)

@@ -5,9 +5,9 @@
 use std::sync::Arc;
 
 use serde_json::{Value, json};
-use wordcraft_doc::props::{Border, BorderStyle, Borders, CharProps, ParaProps, Rgb, TextColor};
-use wordcraft_doc::styles::{Style, StyleKind, TableStyleParts, TableStyleProps};
-use wordcraft_doc::{Block, Table};
+use wordz_doc::props::{Border, BorderStyle, Borders, CharProps, ParaProps, Rgb, TextColor};
+use wordz_doc::styles::{Style, StyleKind, TableStyleParts, TableStyleProps};
+use wordz_doc::{Block, Table};
 
 use crate::{CmdError, CmdResult, CommandSpec, Session, p};
 

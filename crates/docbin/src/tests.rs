@@ -131,7 +131,7 @@ fn text_doc(main: &[Piece], extra: &[Piece], ccp_hdd: u32) -> Vec<u8> {
     cfb_file(&[("WordDocument", &word), ("0Table", &table)])
 }
 
-fn body_texts(doc: &wordcraft_doc::Document) -> Vec<String> {
+fn body_texts(doc: &wordz_doc::Document) -> Vec<String> {
     doc.body.iter().filter_map(|b| b.as_para().map(|p| p.text.clone())).collect()
 }
 
@@ -232,7 +232,7 @@ fn special_characters_mapped() {
     assert_eq!(body_texts(&doc), ["a\tb\nc\u{C}d\u{E}e\u{2011}f\u{AD}g", "\u{FFFC}"]);
     let p1 = doc.body.get(1).and_then(|b| b.as_para()).expect("field para");
     assert!(
-        matches!(p1.objects.first(), Some(wordcraft_doc::para::InlineObject::Field { instr, result, .. }) if instr == "field" && result == "result"),
+        matches!(p1.objects.first(), Some(wordz_doc::para::InlineObject::Field { instr, result, .. }) if instr == "field" && result == "result"),
         "objects: {:?}",
         p1.objects
     );
@@ -607,7 +607,7 @@ fn rich_doc_with(spec: &RichSpec, extra: &RichExtra) -> Vec<u8> {
     cfb_file(&[("WordDocument", &word), ("0Table", &table)])
 }
 
-fn para0(doc: &wordcraft_doc::Document) -> wordcraft_doc::Paragraph {
+fn para0(doc: &wordz_doc::Document) -> wordz_doc::Paragraph {
     doc.body.first().and_then(|b| b.as_para().cloned()).unwrap_or_default()
 }
 
@@ -630,7 +630,7 @@ fn character_formatting_applied() {
     // runs: plain(0..6) bold(6..11) bold+red(11..16)
     assert!(p.runs.get(1).is_some_and(|r| r.props.bold == Some(true)), "run 1 bold: {:?}", p.runs);
     assert!(p.runs.get(2).is_some_and(|r| r.props.bold == Some(true)), "run 2 bold+red: {:?}", p.runs);
-    assert!(p.runs.get(2).is_some_and(|r| matches!(r.props.color, Some(wordcraft_doc::props::TextColor::Rgb(_)))), "run 2 red");
+    assert!(p.runs.get(2).is_some_and(|r| matches!(r.props.color, Some(wordz_doc::props::TextColor::Rgb(_)))), "run 2 red");
     assert!(p.runs.first().is_some_and(|r| r.props.bold.is_none()));
 }
 
@@ -666,7 +666,7 @@ fn paragraph_props_and_heading_style() {
     };
     let doc = read(&rich_doc(&spec)).expect("opens");
     let heading = doc.styles.styles.iter().find(|s| s.name == "Heading 1").expect("style");
-    assert_eq!(heading.para.align, Some(wordcraft_doc::props::Align::Center));
+    assert_eq!(heading.para.align, Some(wordz_doc::props::Align::Center));
     let p0 = doc.body.first().and_then(|b| b.as_para()).expect("para");
     assert_eq!(p0.props.style.as_deref(), Some("Heading 1"));
     assert_eq!(heading.para.outline_level, Some(0));
@@ -698,15 +698,15 @@ fn first_line_indent_chars_and_exact_line_spacing() {
     let para = |i: usize| doc.body.get(i).and_then(|b| b.as_para()).expect("para").props.clone();
     let p0 = para(0);
     assert_eq!((p0.indent_first, p0.indent_first_chars), (Some(24.0), Some(2.0)));
-    assert_eq!(p0.line_spacing, Some(wordcraft_doc::props::LineSpacing::Multiple(1.5)));
-    assert_eq!(para(1).line_spacing, Some(wordcraft_doc::props::LineSpacing::Exactly(20.0)));
+    assert_eq!(p0.line_spacing, Some(wordz_doc::props::LineSpacing::Multiple(1.5)));
+    assert_eq!(para(1).line_spacing, Some(wordz_doc::props::LineSpacing::Exactly(20.0)));
     assert_eq!(para(2).indent_first, Some(-18.0)); // sprmPDxaLeft1_80: a hanging indent
 }
 
 /// Local corpus (gitignored `plan/word/fixtures`): real files must open with text and styles.
 #[test]
 fn corpus_files_open() {
-    let Some(dir) = std::env::var_os("WORDCRAFT_DOCBIN_FIXTURES") else { return };
+    let Some(dir) = std::env::var_os("WORDZ_DOCBIN_FIXTURES") else { return };
     let mut checked = 0;
     if let Ok(entries) = std::fs::read_dir(&dir) {
         for e in entries.flatten() {
@@ -720,7 +720,7 @@ fn corpus_files_open() {
                     Err(e) => panic!("{}: {e}", p.display()),
                 };
                 assert!(!doc.styles.styles.is_empty(), "{}: no styles", p.display());
-                let text = doc.plain_text(wordcraft_doc::StoryRef::Body);
+                let text = doc.plain_text(wordz_doc::StoryRef::Body);
                 assert!(text.chars().count() > 3, "{}: no text", p.display());
                 checked += 1;
             }
@@ -1098,13 +1098,13 @@ fn table_merges_borders_shading() {
     let r0 = tbl.rows[0].cells[0].blocks.iter().filter_map(|b| b.as_para()).map(|p| p.text.clone()).collect::<String>();
     assert_eq!(r0, "ab");
     // Row 2: shading, vertical-merge restart, exact height 20pt.
-    assert_eq!(tbl.rows[1].cells[0].props.shading, Some(wordcraft_doc::Rgb(255, 255, 0)));
-    assert_eq!(tbl.rows[1].cells[0].props.vmerge, wordcraft_doc::props::VMerge::Restart);
+    assert_eq!(tbl.rows[1].cells[0].props.shading, Some(wordz_doc::Rgb(255, 255, 0)));
+    assert_eq!(tbl.rows[1].cells[0].props.vmerge, wordz_doc::props::VMerge::Restart);
     assert_eq!(tbl.rows[1].props.height, Some(20.0));
     // Table borders from the first row that carries them: single 0.5pt black.
     let b = tbl.props.borders.expect("borders");
     let top = b.top.expect("top border");
-    assert_eq!(top.style, wordcraft_doc::props::BorderStyle::Single);
+    assert_eq!(top.style, wordz_doc::props::BorderStyle::Single);
     assert_eq!(top.width, 0.5);
 }
 
@@ -1184,18 +1184,18 @@ fn list_numbering_parsed() {
     assert_eq!(doc.numbering.abstracts.len(), 1);
     assert_eq!(doc.numbering.nums.len(), 1);
     let l0 = doc.numbering.level(1, 0).expect("level 0");
-    assert_eq!(l0.format, wordcraft_doc::section::NumFormat::Decimal);
+    assert_eq!(l0.format, wordz_doc::section::NumFormat::Decimal);
     assert_eq!(l0.text, "%1.");
     assert_eq!(l0.indent, 36.0);
     assert_eq!(l0.hanging, 18.0);
-    assert_eq!(l0.suffix, wordcraft_doc::numbering::LevelSuffix::Space);
+    assert_eq!(l0.suffix, wordz_doc::numbering::LevelSuffix::Space);
     // Paragraphs 1-2 are in the list, paragraph 3 is not.
     let n = |i: usize| doc.body.get(i).and_then(|b| b.as_para()).and_then(|p| p.props.numbering);
-    assert_eq!(n(0), Some(wordcraft_doc::props::NumRef { num: 1, level: 0 }));
-    assert_eq!(n(1), Some(wordcraft_doc::props::NumRef { num: 1, level: 0 }));
+    assert_eq!(n(0), Some(wordz_doc::props::NumRef { num: 1, level: 0 }));
+    assert_eq!(n(1), Some(wordz_doc::props::NumRef { num: 1, level: 0 }));
     assert_eq!(n(2), None);
     // The numbering produces labels through the shared counter.
-    let mut c = wordcraft_doc::numbering::Counters::default();
+    let mut c = wordz_doc::numbering::Counters::default();
     assert_eq!(c.next_label(&doc.numbering, 1, 0).unwrap().0, "1.");
     assert_eq!(c.next_label(&doc.numbering, 1, 0).unwrap().0, "2.");
 }
@@ -1243,7 +1243,7 @@ fn combined_structure_document() {
     let tbl = doc.body.iter().find_map(|b| b.as_table()).expect("table");
     assert_eq!(tbl.rows.len(), 1);
     assert_eq!(tbl.rows[0].cells.len(), 2);
-    let texts: Vec<String> = doc.plain_text(wordcraft_doc::StoryRef::Body).split('\n').map(str::to_string).collect();
+    let texts: Vec<String> = doc.plain_text(wordz_doc::StoryRef::Body).split('\n').map(str::to_string).collect();
     assert!(texts.contains(&"first".to_string()) && texts.contains(&"second".to_string()), "list text present: {texts:?}");
     // Section 1 is attached to the intro paragraph and owns the header story; the final
     // section is landscape.
@@ -1302,11 +1302,11 @@ fn footnote_reference_links_story_part() {
     let doc = read(&struct_doc(&spec)).expect("opens");
     let p0 = doc.body.first().and_then(|b| b.as_para()).expect("para");
     let note = p0.objects.first().expect("note ref object");
-    let wordcraft_doc::para::InlineObject::NoteRef { kind, id, .. } = note else { panic!("not a note: {note:?}") };
-    assert_eq!(*kind, wordcraft_doc::para::NoteKind::Footnote);
+    let wordz_doc::para::InlineObject::NoteRef { kind, id, .. } = note else { panic!("not a note: {note:?}") };
+    assert_eq!(*kind, wordz_doc::para::NoteKind::Footnote);
     let part = doc.parts.get(id).expect("note part");
     assert!(part.blocks.iter().any(|b| b.as_para().is_some_and(|p| p.text.contains("Note body"))), "note text: {:?}", part.blocks);
-    assert_eq!(part.kind, wordcraft_doc::PartKind::Footnote);
+    assert_eq!(part.kind, wordz_doc::PartKind::Footnote);
 }
 
 #[test]
@@ -1326,8 +1326,8 @@ fn endnote_reference_links_story_part() {
     };
     let doc = read(&struct_doc(&spec)).expect("opens");
     let p0 = doc.body.first().and_then(|b| b.as_para()).expect("para");
-    let wordcraft_doc::para::InlineObject::NoteRef { kind, id, .. } = p0.objects.first().expect("note ref object") else { panic!("no note ref") };
-    assert_eq!(*kind, wordcraft_doc::para::NoteKind::Endnote);
+    let wordz_doc::para::InlineObject::NoteRef { kind, id, .. } = p0.objects.first().expect("note ref object") else { panic!("no note ref") };
+    assert_eq!(*kind, wordz_doc::para::NoteKind::Endnote);
     let part = doc.parts.get(id).expect("endnote part");
     assert!(part.blocks.iter().any(|b| b.as_para().is_some_and(|p| p.text.contains("Endnote body"))));
 }
@@ -1345,7 +1345,7 @@ fn fields_and_hyperlinks() {
     let linked = p0.runs.iter().find(|r| r.props.link.is_some()).expect("linked run");
     assert_eq!(linked.props.link.as_deref(), Some("http://x"));
     // The PAGE field became one object with its cached result.
-    let wordcraft_doc::para::InlineObject::Field { instr, result, .. } = p0.objects.first().expect("field object") else {
+    let wordz_doc::para::InlineObject::Field { instr, result, .. } = p0.objects.first().expect("field object") else {
         panic!("no field: {:?}", p0.objects)
     };
     assert_eq!(instr, "PAGE");
@@ -1365,11 +1365,11 @@ fn bookmarks_become_objects() {
     let p0 = doc.body.first().and_then(|b| b.as_para()).expect("para");
     // The start anchor sits before the text, the end after "Hello".
     assert!(
-        matches!(p0.objects.first(), Some(wordcraft_doc::para::InlineObject::BookmarkStart { name }) if name == "bm1"),
+        matches!(p0.objects.first(), Some(wordz_doc::para::InlineObject::BookmarkStart { name }) if name == "bm1"),
         "objects: {:?}",
         p0.objects
     );
-    assert!(matches!(p0.objects.get(1), Some(wordcraft_doc::para::InlineObject::BookmarkEnd { name }) if name == "bm1"), "objects: {:?}", p0.objects);
+    assert!(matches!(p0.objects.get(1), Some(wordz_doc::para::InlineObject::BookmarkEnd { name }) if name == "bm1"), "objects: {:?}", p0.objects);
     assert_eq!(p0.text, "\u{FFFC}Hello\u{FFFC} world");
 }
 
@@ -1392,7 +1392,7 @@ fn inline_png_picture() {
     let doc = read(&struct_doc(&spec)).expect("opens");
     let p0 = doc.body.first().and_then(|b| b.as_para()).expect("para");
     assert_eq!(p0.text, "Pic\u{FFFC}!");
-    let wordcraft_doc::para::InlineObject::Image { media, w, h, .. } = p0.objects.first().expect("image object") else {
+    let wordz_doc::para::InlineObject::Image { media, w, h, .. } = p0.objects.first().expect("image object") else {
         panic!("no image: {:?}", p0.objects)
     };
     assert_eq!((*w, *h), (72.0, 36.0)); // 1440 × 720 twips
@@ -1452,7 +1452,7 @@ fn structured_spec(text: &'static str, ccp: u32) -> StructSpec {
 // Hardening regressions: hostile CP ranges, piece lookups, picture fan-out, overflows.
 
 /// All the paragraph text of a document: body plus every part.
-fn all_text(doc: &wordcraft_doc::Document) -> String {
+fn all_text(doc: &wordz_doc::Document) -> String {
     let mut s: String = body_texts(doc).join("\n");
     for part in doc.parts.values() {
         for b in &part.blocks {
@@ -1494,10 +1494,10 @@ fn huge_story_ranges_are_clamped_to_their_subdocument() {
     assert!(all.len() < 200, "text grew to {} bytes", all.len());
     let header = doc.last_section.headers.default.and_then(|id| doc.parts.get(&id)).expect("header part");
     assert!(header.blocks.iter().any(|b| b.as_para().is_some_and(|p| p.text == "Head")), "header: {:?}", header.blocks);
-    let footnote = doc.parts.values().find(|p| p.kind == wordcraft_doc::PartKind::Footnote).expect("footnote part");
+    let footnote = doc.parts.values().find(|p| p.kind == wordz_doc::PartKind::Footnote).expect("footnote part");
     assert!(footnote.blocks.iter().any(|b| b.as_para().is_some_and(|p| p.text == "Note body")));
     // The endnote story starts past the endnote subdocument: nothing to read.
-    assert!(!doc.parts.values().any(|p| p.kind == wordcraft_doc::PartKind::Endnote));
+    assert!(!doc.parts.values().any(|p| p.kind == wordz_doc::PartKind::Endnote));
 }
 
 /// A document whose piece table is given raw (cps + one Pcd per piece), with `text` bytes
@@ -1618,7 +1618,7 @@ fn anchors_sharing_one_picture_share_one_media_entry() {
     assert_eq!(doc.media.len(), 1);
     let p0 = doc.body.first().and_then(|b| b.as_para()).expect("para");
     assert_eq!(p0.objects.len(), 5000);
-    assert!(p0.objects.iter().all(|o| matches!(o, wordcraft_doc::para::InlineObject::Image { media, .. } if media == "image1.png")));
+    assert!(p0.objects.iter().all(|o| matches!(o, wordz_doc::para::InlineObject::Image { media, .. } if media == "image1.png")));
 }
 
 #[test]
@@ -1704,7 +1704,7 @@ fn piece_prm_character_formatting_applied() {
 #[test]
 fn section_break_kinds_imported() {
     // #459. SBkcOperand: 0 continuous, 1 new column, 2 new page, 3 even page, 4 odd page.
-    use wordcraft_doc::section::SectionStart;
+    use wordz_doc::section::SectionStart;
     let kinds = [SectionStart::Continuous, SectionStart::NextColumn, SectionStart::NextPage, SectionStart::EvenPage, SectionStart::OddPage];
     for (bkc, want) in kinds.into_iter().enumerate() {
         let spec = one_section("Text\r", grpprl(&[(0x3009, &[bkc as u8])]), vec![(0, 0, Vec::new())]);
@@ -1746,7 +1746,7 @@ fn negative_list_reference_keeps_list_membership() {
     spec.plf_lfo = plf_lfo(0x1000);
     let doc = read(&struct_doc(&spec)).expect("opens");
     let para = |i: usize| doc.body.get(i).and_then(|b| b.as_para()).map(|p| (p.props.numbering, p.props.indent_left)).unwrap_or_default();
-    let one = Some(wordcraft_doc::props::NumRef { num: 1, level: 0 });
+    let one = Some(wordz_doc::props::NumRef { num: 1, level: 0 });
     assert_eq!(para(0), (one, Some(36.0)), "0x0001");
     assert_eq!(para(1), (one, Some(36.0)), "0xFFFF = -1");
     assert_eq!(para(2).0, None, "0");
@@ -1824,7 +1824,7 @@ fn tabs_papx(del: &[i16], add: &[(i16, u8)]) -> Vec<u8> {
 /// a style and by the paragraph, stops it removes, and the TBD's alignment and leader are read.
 #[test]
 fn tab_stops_read_from_styles_and_paragraphs() {
-    use wordcraft_doc::props::{TabAlign, TabLeader};
+    use wordz_doc::props::{TabAlign, TabLeader};
     // Normal: centre at 3.25" (4680 tw), right at 6.5" (9360 tw) with a dot leader (tlc 1).
     let normal = grpprl(&[(0xC60D, &tabs_papx(&[], &[(4680, 1), (9360, 2 | 1 << 3)]))]);
     // The paragraph drops the centre stop and adds a left stop at 0.5" and a bar at 1".
@@ -1883,7 +1883,7 @@ fn hostile_tab_operands_are_safe() {
 /// Before, every section of such a file was lost and each section mark became a page break.
 #[test]
 fn section_marks_end_paragraphs() {
-    use wordcraft_doc::section::SectionStart;
+    use wordz_doc::section::SectionStart;
     let spec = StructSpec {
         text: "first\u{C}second\r",
         header_stories: vec![],

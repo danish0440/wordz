@@ -8,11 +8,11 @@
 //! points, so each is one command (one undo step when it changes the document).
 
 use serde_json::Value;
-use wordcraft_doc::para::Anchor;
-use wordcraft_doc::props::TableFloat;
-use wordcraft_doc::{Document, Path, Pos, StoryRef, Table};
-use wordcraft_geom::Rect;
-use wordcraft_layout::{DocLayout, Placed};
+use wordz_doc::para::Anchor;
+use wordz_doc::props::TableFloat;
+use wordz_doc::{Document, Path, Pos, StoryRef, Table};
+use wordz_geom::Rect;
+use wordz_layout::{DocLayout, Placed};
 
 use super::table_resize::{self, CellBox, Edge, REACH, ResizeTarget};
 use super::{sel_result, table};
@@ -415,7 +415,7 @@ fn fit_column(s: &mut Session, v: &Value) -> CmdResult {
     let t = s.doc.table(target.story, &target.table).ok_or_else(|| CmdError::Failed("there's no table there".into()))?;
     let g = line.checked_sub(1).ok_or_else(|| CmdError::Failed("there's no column left of that border".into()))?;
     let (narrowest, widest) =
-        wordcraft_layout::measure_table_columns(&s.doc, t).get(g).copied().ok_or_else(|| CmdError::Failed("there's no such column".into()))?;
+        wordz_layout::measure_table_columns(&s.doc, t).get(g).copied().ok_or_else(|| CmdError::Failed("there's no such column".into()))?;
     let current = target.widths().get(g).copied().unwrap_or(0.0);
     // As in Word, the columns right of it keep their widths and move with the border, so the
     // table narrows or widens: up to the right margin, never below the column's narrowest content.
@@ -433,7 +433,7 @@ fn fit_column(s: &mut Session, v: &Value) -> CmdResult {
 mod tests {
     use super::*;
     use serde_json::json;
-    use wordcraft_doc::props::Align;
+    use wordz_doc::props::Align;
 
     fn table_session(rows: usize, cols: usize) -> Session {
         let mut s = Session::new(Document::new());
@@ -466,7 +466,7 @@ mod tests {
         }
     }
 
-    fn para(s: &Session, r: usize, c: usize) -> wordcraft_doc::Paragraph {
+    fn para(s: &Session, r: usize, c: usize) -> wordz_doc::Paragraph {
         s.doc.para(StoryRef::Body, &cell_pos(s, r, c).path).cloned().unwrap()
     }
 
@@ -725,7 +725,7 @@ mod tests {
         s.sel = Selection::caret(cell_pos(&s, 0, 0));
         s.run("text.insert", &json!({"text": "ab"})).unwrap();
         let (a, b, c) = (cell_rect(&mut s, 0, 0), cell_rect(&mut s, 0, 1), cell_rect(&mut s, 0, 2));
-        let fit = wordcraft_layout::measure_table_columns(&s.doc, &first_table(&s));
+        let fit = wordz_layout::measure_table_columns(&s.doc, &first_table(&s));
         s.run("table.fitColumn", &json!({"page": 0, "x": a.right(), "y": mid_y(a)})).unwrap();
         let (a1, b1, c1) = (cell_rect(&mut s, 0, 0), cell_rect(&mut s, 0, 1), cell_rect(&mut s, 0, 2));
         assert!((a1.w - fit[0].1).abs() < 0.5 && a1.w < a.w - 50.0, "{a:?} → {a1:?}, {fit:?}");

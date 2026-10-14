@@ -6,10 +6,10 @@
 //! (`tbRl`), bottom-to-top ones from the left (`btLr`). Pictures, shapes and text boxes keep
 //! standing upright where the turn carries them; headers and footers stay horizontal.
 
-use wordcraft_doc::StoryRef;
-use wordcraft_doc::props::{Borders, TextDirection};
-use wordcraft_doc::section::SectionProps;
-use wordcraft_geom::{Point, Rect};
+use wordz_doc::StoryRef;
+use wordz_doc::props::{Borders, TextDirection};
+use wordz_doc::section::SectionProps;
+use wordz_geom::{Point, Rect};
 
 use crate::{Page, Placed, turn_point, turn_rect};
 

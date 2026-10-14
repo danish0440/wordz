@@ -1,6 +1,6 @@
 //! File › Options (#485): a list of panes on the left (General, Display, Proofing, Save,
 //! Language, Accessibility, Advanced, Agents), the chosen pane's settings on the right. Only
-//! settings WordCraft carries out are shown. Each pane is one function below, so a new setting
+//! settings WordZ carries out are shown. Each pane is one function below, so a new setting
 //! goes into its pane's function. Settings agents can change too go through `file.options`; the
 //! rest live in [`crate::UiState`] (saved in `ui.json`).
 
@@ -10,8 +10,8 @@ use egui::{RichText, Ui, vec2};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use serde_json::{Map, Value, json};
-use wordcraft_engine::cmd::options::{MAX_WORD_CHARS, PANES};
-use wordcraft_geom::Unit;
+use wordz_engine::cmd::options::{MAX_WORD_CHARS, PANES};
+use wordz_geom::Unit;
 
 use crate::WordApp;
 use crate::theme::{Tokens, semibold};
@@ -63,7 +63,7 @@ impl MeasureExt for egui::DragValue<'_> {
             })
             .custom_parser(move |text| {
                 let text: String = text.chars().filter(|c| !c.is_whitespace()).collect();
-                wordcraft_geom::parse_measure(&text, unit).map(|pt| f64::from(pt / unit.pt_per_unit()))
+                wordz_geom::parse_measure(&text, unit).map(|pt| f64::from(pt / unit.pt_per_unit()))
             })
     }
 }
@@ -186,9 +186,9 @@ fn general(app: &mut WordApp, ui: &mut Ui) {
     section(ui, "Start-up");
     let mut start = app.ui.start_screen;
     if ui
-        .checkbox(&mut start, tl!("Show the Start screen when WordCraft starts"))
+        .checkbox(&mut start, tl!("Show the Start screen when WordZ starts"))
         .on_hover_text(tl!(
-            "On: WordCraft opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document."
+            "On: WordZ opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document."
         ))
         .changed()
     {
@@ -208,7 +208,7 @@ fn general(app: &mut WordApp, ui: &mut Ui) {
         let hint = app.session.user_initials();
         if ui
             .add(
-                egui::TextEdit::singleline(&mut i).desired_width(80.0).char_limit(wordcraft_engine::cmd::options::MAX_INITIALS_CHARS).hint_text(hint),
+                egui::TextEdit::singleline(&mut i).desired_width(80.0).char_limit(wordz_engine::cmd::options::MAX_INITIALS_CHARS).hint_text(hint),
             )
             .changed()
         {
@@ -271,7 +271,7 @@ fn proofing(app: &mut WordApp, ui: &mut Ui) {
 /// The custom dictionary: the words Add to Dictionary kept, each with a Remove button, and a
 /// field to add one.
 fn custom_dictionary(app: &mut WordApp, ui: &mut Ui) {
-    let words = wordcraft_engine::proof::user_dictionary();
+    let words = wordz_engine::proof::user_dictionary();
     if words.is_empty() {
         note(ui, "No words yet. Add to Dictionary on a misspelled word puts it here.");
     }
@@ -308,7 +308,7 @@ fn save(app: &mut WordApp, ui: &mut Ui) {
     // The browser can't write to the user's files, so AutoSave can't be turned on there (#176).
     let browser = app.autosave_block() == Some(crate::AutoSaveBlock::Browser);
     let mut autosave = app.autosave && !browser;
-    let r = ui.add_enabled(!browser, egui::Checkbox::new(&mut autosave, tl!("AutoSave documents you have saved in WordCraft")));
+    let r = ui.add_enabled(!browser, egui::Checkbox::new(&mut autosave, tl!("AutoSave documents you have saved in WordZ")));
     if browser {
         r.on_disabled_hover_text(crate::AutoSaveBlock::Browser.reason());
     } else if r.changed() {
@@ -345,7 +345,7 @@ fn language(app: &mut WordApp, ui: &mut Ui) {
 }
 
 fn accessibility(app: &mut WordApp, ui: &mut Ui) {
-    use wordcraft_engine::speech::{MAX_RATE, MIN_RATE};
+    use wordz_engine::speech::{MAX_RATE, MIN_RATE};
     section(ui, "Visual effects");
     animations_picker(app, ui);
     ui.add_space(8.0);
@@ -450,7 +450,7 @@ fn advanced(app: &mut WordApp, ui: &mut Ui) {
 
 fn agents(ui: &mut Ui) {
     section(ui, "Agents");
-    ui.label(tl!("Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel."));
+    ui.label(tl!("Every command is available to scripts and AI agents: run `wordz-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel."));
 }
 
 /// Interface theme: Light, Dark, or follow the system's appearance (#115).
@@ -589,23 +589,23 @@ fn overlay<T: DeserializeOwned>(root: &mut Value, path: &mut Vec<String>, input:
     }
 }
 
-/// File ▸ Options ▸ General: make WordCraft the default app for Word documents (#295). Only where
+/// File ▸ Options ▸ General: make WordZ the default app for Word documents (#295). Only where
 /// the host can (`Services::make_default_app`: Windows opens Default apps, Linux and BSD use
 /// `xdg-mime`); macOS shows how to do it in Finder, the web shows nothing.
 fn default_app_button(app: &mut WordApp, ui: &mut Ui) {
     if app.services.make_default_app.is_some() {
         let hint = if cfg!(target_os = "windows") {
-            tl!("Opens Settings › Default apps, where you choose WordCraft for .docx and the other document types.")
+            tl!("Opens Settings › Default apps, where you choose WordZ for .docx and the other document types.")
         } else {
-            tl!("Opens .docx, .doc, .rtf and .odt files and Word templates with WordCraft from now on.")
+            tl!("Opens .docx, .doc, .rtf and .odt files and Word templates with WordZ from now on.")
         };
-        if ui.button(tl!("Make WordCraft the default for Word documents…")).on_hover_text(hint).clicked() {
+        if ui.button(tl!("Make WordZ the default for Word documents…")).on_hover_text(hint).clicked() {
             // Straight to the hook, not through `run`: only a click may change system defaults.
             let _ = app.make_default_app();
         }
     } else if cfg!(target_os = "macos") {
         ui.label(
-            egui::RichText::new(tl!("To open Word documents with WordCraft by default: select one in Finder, choose File › Get Info, pick WordCraft under Open with, then click Change All."))
+            egui::RichText::new(tl!("To open Word documents with WordZ by default: select one in Finder, choose File › Get Info, pick WordZ under Open with, then click Change All."))
                 .small()
                 .weak(),
         );
@@ -615,7 +615,7 @@ fn default_app_button(app: &mut WordApp, ui: &mut Ui) {
 /// File ▸ Options ▸ Numerals: how digits look on screen (display only, like Word's
 /// File › Options › Advanced › Numeral).
 fn numeral_picker(app: &mut WordApp, ui: &mut Ui) {
-    use wordcraft_layout::NumeralMode;
+    use wordz_layout::NumeralMode;
     ui.horizontal(|ui| {
         ui.label(tl!("Numerals:"));
         let mut sel = app.session.view.numeral;
@@ -634,7 +634,7 @@ fn numeral_picker(app: &mut WordApp, ui: &mut Ui) {
 mod tests {
     use egui_kittest::kittest::Queryable;
     use serde_json::json;
-    use wordcraft_geom::Unit;
+    use wordz_geom::Unit;
 
     use super::{decimal, length, unit};
 
@@ -642,7 +642,7 @@ mod tests {
     use crate::{Services, UiState, WordApp};
 
     fn app() -> WordApp {
-        WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), Services::default())
+        WordApp::new(wordz_engine::Session::new(wordz_doc::Document::new()), Services::default())
     }
 
     /// File › Options settings come back after a restart, and a `ui.json` with a wrong value in
@@ -664,7 +664,7 @@ mod tests {
         assert_eq!(b.session.prefs.units, Some(Unit::Centimeters));
         assert_eq!(b.session.initials, "VK");
         assert_eq!((b.ui.recent_count, b.ui.print_backgrounds), (30, true));
-        assert!(wordcraft_engine::proof::user_dictionary().contains(&"zqxoptionsword".to_string()));
+        assert!(wordz_engine::proof::user_dictionary().contains(&"zqxoptionsword".to_string()));
 
         let junk = br#"{"theme": "dark", "recentCount": "lots", "printBackgrounds": 7, "optionsPane": ["x"], "dark": true,
             "editing": {"measurementUnits": "furlongs", "typingReplacesSelection": false, "marks": {"tabs": "yes", "spaces": true}}}"#;
@@ -767,7 +767,7 @@ mod tests {
     fn animation_effects_is_an_accessibility_option() {
         use crate::theme::Animations;
         let services = Services { animations_enabled: Some(Box::new(|| Some(false))), ..Default::default() };
-        let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), services);
+        let mut a = WordApp::new(wordz_engine::Session::new(wordz_doc::Document::new()), services);
         a.run("file.options", json!({"pane": "accessibility"})).unwrap();
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
             |ui, app: &mut WordApp| {
@@ -806,10 +806,10 @@ mod tests {
         );
         h.run_steps(4);
         assert!(h.query_by_label("Start-up").is_some(), "the section is there");
-        h.get_by_label("Show the Start screen when WordCraft starts").click();
+        h.get_by_label("Show the Start screen when WordZ starts").click();
         h.run_steps(4);
         assert!(!h.state().ui.start_screen, "the checkbox turns it off");
-        h.get_by_label("Show the Start screen when WordCraft starts").click();
+        h.get_by_label("Show the Start screen when WordZ starts").click();
         h.run_steps(4);
         assert!(h.state().ui.start_screen, "and on again");
     }
@@ -849,7 +849,7 @@ mod tests {
         let mut a = app();
         a.run("file.options", json!({"region": "pl-PL"})).unwrap();
         a.run("file.new", json!({})).unwrap();
-        assert_eq!(wordcraft_geom::paper_name(a.session.doc.last_section.page_w, a.session.doc.last_section.page_h), Some("A4"));
+        assert_eq!(wordz_geom::paper_name(a.session.doc.last_section.page_w, a.session.doc.last_section.page_h), Some("A4"));
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
             |ui, app: &mut WordApp| {
                 let ctx = ui.ctx().clone();

@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use egui::{Align2, Color32, CornerRadius, FontData, FontDefinitions, FontFamily, FontId, Rect, Stroke, Visuals};
 
-/// WordCraft's app colour (and its darker ink for text on light backgrounds).
+/// WordZ's app colour (and its darker ink for text on light backgrounds).
 pub const APP_COLOR: Color32 = Color32::from_rgb(0x3B, 0x5B, 0xDB);
 pub const APP_INK: Color32 = Color32::from_rgb(0x2B, 0x47, 0xB5);
 
@@ -84,7 +84,7 @@ impl From<Appearance> for String {
 /// setting and never changes with it.
 ///
 /// `Auto` (the default) keeps the display scale the system reports. A chosen size is absolute, as in
-/// PhotoCraft and PdfCraft (#822): "100%" is one screen pixel per point whatever the display reports,
+/// PhotoZ and PdfZ (#822): "100%" is one screen pixel per point whatever the display reports,
 /// so a system that guesses 200 % (a bare window manager on X11, where winit falls back to the
 /// monitor's DPI) doesn't make "100%" draw at 200 %. The display's scale is divided back out in
 /// [`InterfaceSize::zoom_factor`].
@@ -97,7 +97,7 @@ impl InterfaceSize {
     pub const MAX: u16 = 300;
     /// Follow the display scale the system reports.
     pub const AUTO: InterfaceSize = InterfaceSize(None);
-    /// The sizes File › Options offers after Auto, in percent (PhotoCraft's and PdfCraft's).
+    /// The sizes File › Options offers after Auto, in percent (PhotoZ's and PdfZ's).
     pub const PRESETS: [u16; 12] = [75, 80, 85, 90, 95, 100, 125, 150, 175, 200, 250, 300];
 
     /// A chosen size from any number: rounded and clamped to 50–300 %; `None` for NaN or infinity.
@@ -380,14 +380,14 @@ pub fn install_fonts_with(ctx: &egui::Context, prefer_hans: bool, system_cjk: bo
 /// [`install_fonts_with`], also adding document-font `faces` as last-resort fallbacks (#565): the
 /// faces that cover text the interface fonts cannot draw (an input method's composition, or a
 /// file name in the window caption).
-pub fn install_fonts_extra(ctx: &egui::Context, prefer_hans: bool, system_cjk: bool, faces: &[Arc<wordcraft_fonts::FontFace>]) {
+pub fn install_fonts_extra(ctx: &egui::Context, prefer_hans: bool, system_cjk: bool, faces: &[Arc<wordz_fonts::FontFace>]) {
     let mut fonts = font_definitions(prefer_hans, system_cjk);
     add_fallback_faces(&mut fonts, faces);
     ctx.set_fonts(fonts);
 }
 
 /// Add `faces` after every other font of the interface families.
-pub fn add_fallback_faces(fonts: &mut FontDefinitions, faces: &[Arc<wordcraft_fonts::FontFace>]) {
+pub fn add_fallback_faces(fonts: &mut FontDefinitions, faces: &[Arc<wordz_fonts::FontFace>]) {
     for f in faces {
         let name = format!("fallback {} {} {}", f.family, f.style, f.id());
         let mut data = FontData::from_owned(f.data().to_vec());
@@ -405,7 +405,7 @@ pub fn add_fallback_faces(fonts: &mut FontDefinitions, faces: &[Arc<wordcraft_fo
 /// the interface faces cover, or CJK, which uses the CJK UI font ([`install_fonts_with`]) rather
 /// than a document face. System CJK collections are larger than [`faces_for_preedit`] will load.
 pub fn caption_char_covered(c: char) -> bool {
-    (c as u32) < 0x250 || wordcraft_fonts::is_cjk(c)
+    (c as u32) < 0x250 || wordz_fonts::is_cjk(c)
 }
 
 /// Document faces needed to draw `text` (the input method's composition, or a file name in the
@@ -414,11 +414,11 @@ pub fn caption_char_covered(c: char) -> bool {
 /// (system CJK collections) are left to the CJK fallback.
 pub fn faces_for_preedit(
     text: &str,
-    have: &[Arc<wordcraft_fonts::FontFace>],
+    have: &[Arc<wordz_fonts::FontFace>],
     covered: impl Fn(char) -> bool,
-    lookup: impl Fn(char) -> Option<Arc<wordcraft_fonts::FontFace>>,
-) -> Vec<Arc<wordcraft_fonts::FontFace>> {
-    let mut out: Vec<Arc<wordcraft_fonts::FontFace>> = Vec::new();
+    lookup: impl Fn(char) -> Option<Arc<wordz_fonts::FontFace>>,
+) -> Vec<Arc<wordz_fonts::FontFace>> {
+    let mut out: Vec<Arc<wordz_fonts::FontFace>> = Vec::new();
     for c in text.chars().filter(|c| !c.is_ascii() && !c.is_whitespace() && !covered(*c)) {
         if have.iter().chain(&out).any(|f| f.covers(c)) {
             continue;
@@ -458,7 +458,7 @@ pub fn font_definitions(prefer_hans: bool, system_cjk: bool) -> FontDefinitions 
             }
         }
     };
-    let cjk = wordcraft_fonts::ui_cjk_fonts(prefer_hans);
+    let cjk = wordz_fonts::ui_cjk_fonts(prefer_hans);
     for f in &cjk {
         // The same static bytes the document fonts use: one copy in the binary.
         add_cjk(&mut fonts, format!("{} {}", f.family, f.style), FontData::from_static(f.bytes));
@@ -483,22 +483,22 @@ pub fn font_definitions(prefer_hans: bool, system_cjk: bool) -> FontDefinitions 
 /// ([`cjk_font_text`](crate::i18n::Lang::cjk_font_text)). The font is picked for the catalogs'
 /// missing characters, or for the language names when only those are missing.
 #[cfg(not(target_arch = "wasm32"))]
-fn system_cjk_font(hans: bool) -> Option<&'static wordcraft_fonts::SystemUiFont> {
-    static ZH: std::sync::OnceLock<Option<wordcraft_fonts::SystemUiFont>> = std::sync::OnceLock::new();
-    static OTHER: std::sync::OnceLock<Option<wordcraft_fonts::SystemUiFont>> = std::sync::OnceLock::new();
+fn system_cjk_font(hans: bool) -> Option<&'static wordz_fonts::SystemUiFont> {
+    static ZH: std::sync::OnceLock<Option<wordz_fonts::SystemUiFont>> = std::sync::OnceLock::new();
+    static OTHER: std::sync::OnceLock<Option<wordz_fonts::SystemUiFont>> = std::sync::OnceLock::new();
     (if hans { &ZH } else { &OTHER })
         .get_or_init(|| {
-            let embedded = wordcraft_fonts::ui_cjk_fonts(hans);
+            let embedded = wordz_fonts::ui_cjk_fonts(hans);
             let (catalogs, names) = crate::i18n::Lang::cjk_font_text(hans);
-            let mut needed = wordcraft_fonts::ui_uncovered_cjk(&catalogs, &embedded);
+            let mut needed = wordz_fonts::ui_uncovered_cjk(&catalogs, &embedded);
             if needed.is_empty() {
-                needed = wordcraft_fonts::ui_uncovered_cjk(&[&names], &embedded);
+                needed = wordz_fonts::ui_uncovered_cjk(&[&names], &embedded);
                 if needed.is_empty() {
                     return None;
                 }
             }
             log::debug!("interface: {} CJK characters lack an embedded glyph", needed.len());
-            wordcraft_fonts::system_cjk_ui_font(hans, &needed)
+            wordz_fonts::system_cjk_ui_font(hans, &needed)
         })
         .as_ref()
 }
@@ -665,7 +665,7 @@ fn visuals(t: &Tokens) -> Visuals {
     v
 }
 
-pub fn c32(c: wordcraft_doc::Rgb) -> Color32 {
+pub fn c32(c: wordz_doc::Rgb) -> Color32 {
     Color32::from_rgb(c.0, c.1, c.2)
 }
 
@@ -714,7 +714,7 @@ mod tests {
     /// once, and not for characters the interface fonts draw.
     #[test]
     fn preedit_gets_document_fallback_faces() {
-        let face = wordcraft_fonts::FontDb::global().face("Source Sans 3", "Regular");
+        let face = wordz_fonts::FontDb::global().face("Source Sans 3", "Regular");
         let lookup = |_: char| Some(face.clone());
         let bangla = "\u{0986}\u{09AE}\u{09BF}";
         let got = super::faces_for_preedit(bangla, &[], |_| false, lookup);
@@ -735,7 +735,7 @@ mod tests {
     /// add here.
     #[test]
     fn caption_borrows_one_fallback_face_for_hebrew() {
-        let face = wordcraft_fonts::FontDb::global().face("Source Sans 3", "Regular");
+        let face = wordz_fonts::FontDb::global().face("Source Sans 3", "Regular");
         let lookup = |c: char| {
             assert!(!super::caption_char_covered(c), "{c} is already drawn by the interface fonts");
             Some(face.clone())

@@ -7,13 +7,13 @@
 # No Microsoft Word or other product localisation was consulted or copied.
 # Use short commands and plain Estonian. Keep product and format names.
 # Use count-neutral labels. This catalog does not add Estonian spell checking.
-# Author: @henno with Codex; MIT OR Apache-2.0, like WordCraft.
+# Author: @henno with Codex; MIT OR Apache-2.0, like WordZ.
 
 	(no suggestions)	(soovitused puuduvad)
 	1.5 Line Spacing	Reavahe 1,5
-	A free, open-source word processor written from scratch in Rust.\nPart of the Crafting Apps from the ArtCraft team.	Tasuta avatud lähtekoodiga tekstitöötlusprogramm, mis on kirjutatud Rustis.\nArtCrafti meeskonna Crafting Appsi osa.
+	A free, open-source word processor written from scratch in Rust.\nPart of the Z Apps.	A free, open-source word processor written from scratch in Rust.\nPart of the Z Apps.
 	About	Teave
-	About WordCraft	WordCrafti teave
+	About WordZ	WordZi teave
 	Accept	Nõustu
 	Accept All Changes	Nõustu kõigi muudatustega
 	Accept This Change	Nõustu selle muudatusega
@@ -250,7 +250,7 @@
 	Envelopes	Ümbrikud
 	Eraser	Kustutuskumm
 	Even Page	Paarisleht
-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Kõik käsud on saadaval skriptidele ja tehisintellekti agentidele. MCP-serveri jaoks käivita `wordcraft-cli mcp`. JSON-juhtkanali jaoks käivita rakendus valikuga `--control <port>`.
+	Every command is available to scripts and AI agents: run `wordz-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Kõik käsud on saadaval skriptidele ja tehisintellekti agentidele. MCP-serveri jaoks käivita `wordz-cli mcp`. JSON-juhtkanali jaoks käivita rakendus valikuga `--control <port>`.
 	Export	Ekspordi
 	Export PDF	Ekspordi PDF
 	Export Page as PNG	Ekspordi leht PNG-na
@@ -383,8 +383,8 @@
 	Interface language	Kasutajaliidese keel
 	Interface language:	Kasutajaliidese keel:
 	Italic	Kaldkiri
-	Join the ArtCraft community on Discord	Liitu ArtCrafti kogukonnaga Discordis
-	Join us on Discord: discord.gg/artcraft	Liitu meiega Discordis: discord.gg/artcraft
+	Join the community on GitHub	Join the community on GitHub
+	Join us on GitHub: github.com/danish0440/wordz/issues	Join us on GitHub: github.com/danish0440/wordz/issues
 	Justify	Rööpjoonda
 	Keep Lines Together	Hoia read koos
 	Keep Text Only	Säilita ainult tekst
@@ -425,7 +425,7 @@
 	Links	Lingid
 	Location: {path}	Asukoht: {path}
 	Mirror indents	Peegelda taanded
-	MIT OR Apache-2.0. Copyright (c) 2026 ArtCraft Team and the WordCraft contributors.	MIT OR Apache-2.0. Autoriõigus (c) 2026 ArtCrafti meeskond ja WordCrafti kaasautorid.
+	MIT OR Apache-2.0. Copyright (c) 2026 Upstream Team and the WordCraft contributors.	MIT OR Apache-2.0. Autoriõigus (c) 2026 Upstreami meeskond ja WordCrafti kaasautorid.
 	Macros	Makrod
 	Mailings	Postitused
 	Manage Sources	Halda allikaid
@@ -731,7 +731,7 @@
 	Small caps	Kapiteelkiri
 	SmartArt	SmartArt
 	Sort	Sordi
-	Source code: github.com/storytold/wordcraft	Lähtekood: github.com/storytold/wordcraft
+	Source code: github.com/danish0440/wordz	Lähtekood: github.com/danish0440/wordz
 	Space before/after:	Vahe enne/pärast:
 	Spaces	Tühikud
 	Spacing	Vahe
@@ -880,7 +880,7 @@
 	Word XML Document (*.xml)	Wordi XML-dokument (*.xml)
 	Word 2003 XML Document (*.xml)	Word 2003 XML-dokument (*.xml)
 	WordArt	WordArt
-	WordCraft	WordCraft
+	WordZ	WordZ
 	Words	Sõnad
 	Words only	Ainult sõnad
 	Wrap Text	Mähi tekst
@@ -945,7 +945,7 @@
 	Stopped	Lõpetatud
 	Speed	Kiirus
 	Normal speed	Tavaline kiirus
-	AutoSave documents you have saved in WordCraft	Salvesta WordCraftis salvestatud dokumendid automaatselt
+	AutoSave documents you have saved in WordZ	Salvesta WordZis salvestatud dokumendid automaatselt
 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	Automaatsalvestus ebaõnnestus: {error}. Selle uuesti sisse lülitamiseks salvesta dokument.
 	Couldn't download {name}: {error}	Faili {name} allalaadimine ebaõnnestus: {error}
 	Do you want to save changes to {name}?	Kas soovid faili {name} muudatused salvestada?
@@ -1115,7 +1115,7 @@
 	Left Margin	Vasak veeris
 	Repeat as header row on each page	Korda päisereana igal lehel
 	Insert a new equation (Alt+=)	Lisa uus võrrand (Alt+=)
-	getartcraft.com/apps/wordcraft	getartcraft.com/apps/wordcraft
+	github.com/danish0440/wordz	github.com/danish0440/wordz
 	Bottom Margin	Alumine veeris
 	Cell	Lahter
 	Specify height:	Määra kõrgus:
@@ -1209,7 +1209,7 @@
 	The document will be saved with a password. Save it to protect it.	Dokument salvestatakse parooliga. Kaitsmiseks salvesta see.
 	The password is removed. Save the document to keep the change.	Parool on eemaldatud. Muudatuse säilitamiseks salvesta dokument.
 	The passwords don't match.	Paroolid ei ühti.
-	Keep the password somewhere safe: without it nobody, WordCraft included, can open the document. Leave both boxes empty to remove the password.	Hoia parooli kindlas kohas: ilma selleta ei saa keegi, ka WordCraft, dokumenti avada. Parooli eemaldamiseks jäta mõlemad väljad tühjaks.
+	Keep the password somewhere safe: without it nobody, WordZ included, can open the document. Leave both boxes empty to remove the password.	Hoia parooli kindlas kohas: ilma selleta ei saa keegi, ka WordZ, dokumenti avada. Parooli eemaldamiseks jäta mõlemad väljad tühjaks.
 	Align Top Left	Joonda üles vasakule
 	Align Top Center	Joonda üles keskele
 	Align Top Right	Joonda üles paremale
@@ -1624,13 +1624,13 @@
 	Hindi	Hindi
 	Context	Kontekst
 	System	Süsteem
-	Couldn't make WordCraft the default: {error}	WordCrafti ei õnnestunud vaikerakenduseks määrata: {error}
-	In Default apps, choose WordCraft for the document types you want it to open.	Vali jaotises „Vaikerakendused“ WordCraft nende dokumenditüüpide jaoks, mida see peaks avama.
-	Make WordCraft the default for Word documents…	Määra WordCraft Wordi dokumentide vaikerakenduseks…
-	Opens .docx, .doc, .rtf and .odt files and Word templates with WordCraft from now on.	Edaspidi avatakse .docx-, .doc-, .rtf- ja .odt-failid ning Wordi mallid WordCraftiga.
-	Opens Settings › Default apps, where you choose WordCraft for .docx and the other document types.	Avab Sätted › Vaikerakendused, kus saad valida WordCrafti .docx-i ja teiste dokumenditüüpide jaoks.
-	To open Word documents with WordCraft by default: select one in Finder, choose File › Get Info, pick WordCraft under Open with, then click Change All.	Wordi dokumentide vaikimisi avamiseks WordCraftiga vali Finderis üks dokument, vali Fail › Hangi teave, vali jaotises „Ava rakendusega“ WordCraft ja klõpsa „Muuda kõiki“.
-	WordCraft is now the default app for Word documents.	WordCraft on nüüd Wordi dokumentide vaikerakendus.
+	Couldn't make WordZ the default: {error}	WordZi ei õnnestunud vaikerakenduseks määrata: {error}
+	In Default apps, choose WordZ for the document types you want it to open.	Vali jaotises „Vaikerakendused“ WordZ nende dokumenditüüpide jaoks, mida see peaks avama.
+	Make WordZ the default for Word documents…	Määra WordZ Wordi dokumentide vaikerakenduseks…
+	Opens .docx, .doc, .rtf and .odt files and Word templates with WordZ from now on.	Edaspidi avatakse .docx-, .doc-, .rtf- ja .odt-failid ning Wordi mallid WordZiga.
+	Opens Settings › Default apps, where you choose WordZ for .docx and the other document types.	Avab Sätted › Vaikerakendused, kus saad valida WordZi .docx-i ja teiste dokumenditüüpide jaoks.
+	To open Word documents with WordZ by default: select one in Finder, choose File › Get Info, pick WordZ under Open with, then click Change All.	Wordi dokumentide vaikimisi avamiseks WordZiga vali Finderis üks dokument, vali Fail › Hangi teave, vali jaotises „Ava rakendusega“ WordZ ja klõpsa „Muuda kõiki“.
+	WordZ is now the default app for Word documents.	WordZ on nüüd Wordi dokumentide vaikerakendus.
 	Templates	Mallid
 	Templates and Add-ins	Mallid ja lisandmoodulid
 	Attach Template	Manusta mall
@@ -1733,7 +1733,7 @@
 	Word document	Wordi dokument
 	All files	Kõik failid
 	Recipient lists	Adressaatide loendid
-	The system file dialog isn't available, so WordCraft shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Süsteemi failidialoog pole saadaval, seega näitab WordCraft enda oma. Süsteemi dialoogi saamiseks paigalda failivalija portaal (näiteks xdg-desktop-portal-gtk) või zenity.
+	The system file dialog isn't available, so WordZ shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Süsteemi failidialoog pole saadaval, seega näitab WordZ enda oma. Süsteemi dialoogi saamiseks paigalda failivalija portaal (näiteks xdg-desktop-portal-gtk) või zenity.
 	Up one level	Taseme võrra üles
 	Home folder	Kodukaust
 	{name} wasn't found.	{name} ei leitud.
@@ -1741,8 +1741,8 @@
 	This folder can't be read: {error}	Seda kausta ei saa lugeda: {error}
 	Showing the first {count} items.	Kuvatud on ainult esimesed kirjed: {count}.
 	File name:	Faili nimi:
-	Browse in WordCraft…	Sirvi WordCraftis…
-	Open a file with WordCraft's own browser when the system file dialog doesn't appear.	Ava fail WordCrafti enda failisirvijaga, kui süsteemi failidialoog ei ilmu.
+	Browse in WordZ…	Sirvi WordZis…
+	Open a file with WordZ's own browser when the system file dialog doesn't appear.	Ava fail WordZi enda failisirvijaga, kui süsteemi failidialoog ei ilmu.
 	Hide White Space	Peida tühi ala lehtede vahel
 	All pages	Kõik leheküljed
 	Current page	Praegune lehekülg
@@ -2110,8 +2110,8 @@
 	Region:	Piirkond:
 	Automatic ({region})	Automaatne ({region})
 	Start-up	Käivitamine
-	Show the Start screen when WordCraft starts	Näita WordCrafti käivitamisel avakuva
-	On: WordCraft opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Sees: WordCraft avaneb vaates Fail › Avaleht, kus on tühi dokument, mallid ja hiljutised dokumendid. Väljas: avaneb tühi dokument.
+	Show the Start screen when WordZ starts	Näita WordZi käivitamisel avakuva
+	On: WordZ opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Sees: WordZ avaneb vaates Fail › Avaleht, kus on tühi dokument, mallid ja hiljutised dokumendid. Väljas: avaneb tühi dokument.
 	Privacy Options	Privaatsussuvandid
 	Trust Center	Usalduskeskus
 	Privacy for this document	Selle dokumendi privaatsus

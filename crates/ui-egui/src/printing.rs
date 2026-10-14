@@ -2,7 +2,7 @@
 use craft_ui::printing::Labels;
 pub use craft_ui::printing::{Discover, Duplex, Feedback, Printer, Settings, State};
 
-/// Native submission adds WordCraft's PDF-page collation setting to the shared spooler settings.
+/// Native submission adds WordZ's PDF-page collation setting to the shared spooler settings.
 pub type Submit = Box<dyn Fn(Vec<u8>, Settings, bool) -> std::sync::mpsc::Receiver<Result<String, String>>>;
 
 /// Metadata for the app-owned commands. Inspecting it never discovers printers or submits.
@@ -32,7 +32,7 @@ pub fn show(state: &mut State, ui: &mut egui::Ui, discover: &Discover, translate
         short_edge: &translate("Two-sided: short edge"),
         grayscale: &translate("Grayscale"),
     };
-    state.show(ui, egui::Id::new("wordcraft_print_settings"), discover, &labels);
+    state.show(ui, egui::Id::new("wordz_print_settings"), discover, &labels);
     if let Some(message) = &state.message {
         ui.label(feedback(message, translate));
     }
@@ -147,7 +147,7 @@ pub fn submit(app: &mut crate::WordApp, params: &serde_json::Value) -> Result<se
         app.session.doc.settings.page_color = colour;
     }
     let result = pdf.and_then(|(bytes, plan)| {
-        if native && plan.chosen.checked_mul(settings.copies as usize).is_none_or(|pages| pages > wordcraft_engine::print::MAX_PRINT_PAGES) {
+        if native && plan.chosen.checked_mul(settings.copies as usize).is_none_or(|pages| pages > wordz_engine::print::MAX_PRINT_PAGES) {
             return Err("the selected pages and copies exceed the print-job page limit".into());
         }
         let len = bytes.len();

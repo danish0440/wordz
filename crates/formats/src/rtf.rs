@@ -17,7 +17,7 @@
 
 use std::collections::HashMap;
 
-use wordcraft_doc::{Align, Document, Rgb};
+use wordz_doc::{Align, Document, Rgb};
 
 use crate::model::{self, Cell, FBlock, FTable, Flow, Fmt, Inline, Kind, ListInfo, Meta, Para, make_img};
 
@@ -398,14 +398,14 @@ fn rtf_date(s: &str) -> Option<String> {
 /// RTF text of a document.
 pub fn export(doc: &Document) -> String {
     let flow = model::from_doc(doc);
-    let base_font = doc.styles.default_chr.font.clone().unwrap_or_else(|| wordcraft_doc::styles::BODY_FONT.to_string());
+    let base_font = doc.styles.default_chr.font.clone().unwrap_or_else(|| wordz_doc::styles::BODY_FONT.to_string());
     let mut w = Writer { t: Tables { fonts: vec![base_font], colors: Vec::new() }, lists: Vec::new() };
     let mut body = String::new();
     w.blocks(&flow.blocks, false, "\\par", &mut body, 0);
     export_with(&flow.meta, &w, &body, &doc.last_section)
 }
 
-fn export_with(m: &Meta, w: &Writer, body: &str, sec: &wordcraft_doc::SectionProps) -> String {
+fn export_with(m: &Meta, w: &Writer, body: &str, sec: &wordz_doc::SectionProps) -> String {
     let mut out = String::from("{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033\\uc1\n{\\fonttbl");
     for (i, f) in w.t.fonts.iter().enumerate() {
         let fam = if model::is_mono(f) { "\\fmodern" } else { "\\fswiss" };
@@ -415,7 +415,7 @@ fn export_with(m: &Meta, w: &Writer, body: &str, sec: &wordcraft_doc::SectionPro
     for c in &w.t.colors {
         out.push_str(&format!("\\red{}\\green{}\\blue{};", c.0, c.1, c.2));
     }
-    out.push_str("}\n{\\*\\generator WordCraft;}\n{\\stylesheet{\\s0\\snext0 Normal;}");
+    out.push_str("}\n{\\*\\generator WordZ;}\n{\\stylesheet{\\s0\\snext0 Normal;}");
     for n in 1..=6u32 {
         let sz = HEAD_SIZES.get(n as usize - 1).copied().unwrap_or(12.0);
         out.push_str(&format!("{{\\s{n}\\sbasedon0\\snext0\\outlinelevel{}\\keepn\\b\\fs{} heading {n};}}", n - 1, (sz * 2.0) as i32));
@@ -534,7 +534,7 @@ struct St {
     /// (`\li`, `\ri`, `\fi`), twips.
     /// The paragraph's borders (`\brdrt`, `\brdrb`, `\brdrl`, `\brdrr`) and the side being
     /// described.
-    borders: wordcraft_doc::props::Borders,
+    borders: wordz_doc::props::Borders,
     border_side: Option<char>,
     sb: Option<i32>,
     sa: Option<i32>,
@@ -582,7 +582,7 @@ struct CellDef {
     right: i32,
     /// The borders the cell names (`\clbrdrt` … `\clbrdrr`, each with its line style, `\brdrw`
     /// width and `\brdrcf` colour).
-    borders: wordcraft_doc::props::Borders,
+    borders: wordz_doc::props::Borders,
 }
 
 /// Page size and margins in twips (`\paperw`, `\margl`… and their `…sxn` section forms).
@@ -601,8 +601,8 @@ struct PageGeom {
 
 impl PageGeom {
     /// The section properties these give, Word's defaults where the file names none.
-    fn section(&self) -> wordcraft_doc::SectionProps {
-        let mut s = wordcraft_doc::SectionProps::default();
+    fn section(&self) -> wordz_doc::SectionProps {
+        let mut s = wordz_doc::SectionProps::default();
         // Twips to points, ignoring nonsense (zero, negative, or beyond Word's 22").
         let pt = |v: Option<i32>, lo: f32, hi: f32| v.map(|t| t as f32 / 20.0).filter(|v| v.is_finite() && (lo..=hi).contains(v));
         if let Some(w) = pt(self.w, 72.0, 1584.0) {
@@ -628,7 +628,7 @@ impl PageGeom {
             }
         }
         // Margins that leave no room for text fall back to Word's.
-        let d = wordcraft_doc::SectionProps::default();
+        let d = wordz_doc::SectionProps::default();
         if s.page_w - s.margin_left - s.margin_right < 72.0 {
             (s.margin_left, s.margin_right) = (d.margin_left, d.margin_right);
         }
@@ -733,7 +733,7 @@ impl Reader {
     }
 
     /// The border of the cell side being described, else of the paragraph side.
-    fn cell_border_slot(&mut self) -> Option<&mut Option<wordcraft_doc::props::Border>> {
+    fn cell_border_slot(&mut self) -> Option<&mut Option<wordz_doc::props::Border>> {
         let (b, side) = match self.cell_side {
             Some(c) => (&mut self.def_cur.borders, c),
             None => (&mut self.st.borders, self.st.border_side?),
@@ -838,7 +838,7 @@ impl Reader {
     /// default font's, else the document's.
     fn byte_char(&self, b: u8) -> char {
         let cp = self.st.cp.or_else(|| self.font_cps.get(&self.deff).copied()).unwrap_or(if self.ansicpg == 0 { 1252 } else { self.ansicpg });
-        wordcraft_doc::encoding::windows_byte(cp, b)
+        wordz_doc::encoding::windows_byte(cp, b)
     }
 
     fn commit_style(&mut self) {
@@ -1021,7 +1021,7 @@ impl Reader {
 
     /// The current paragraph's spacing and indents in points.
     fn spacing(&self) -> model::Spacing {
-        use wordcraft_doc::props::LineSpacing;
+        use wordz_doc::props::LineSpacing;
         let pt = |v: i32| (v as f32 / 20.0).clamp(-1584.0, 1584.0);
         let gap = |v: Option<i32>| v.map(|v| pt(v).max(0.0));
         let sl = self.st.sl;
@@ -1087,7 +1087,7 @@ impl Reader {
             }
             out.push(c);
         }
-        if !out.is_empty() && self.table.len() < wordcraft_doc::table::MAX_ROWS {
+        if !out.is_empty() && self.table.len() < wordz_doc::table::MAX_ROWS {
             rights.truncate(out.len());
             self.table.push(out);
             self.table_rights.push(rights);
@@ -1224,9 +1224,9 @@ impl Reader {
                         self.font_name.clear();
                         self.font_cp_cur = None;
                     }
-                    "fcharset" => self.font_cp_cur = wordcraft_doc::encoding::charset_code_page(pv),
+                    "fcharset" => self.font_cp_cur = wordz_doc::encoding::charset_code_page(pv),
                     // A font's explicit code page (`\cpg1251`) wins over its charset.
-                    "cpg" if pv > 0 && wordcraft_doc::encoding::SINGLE_BYTE_CODE_PAGES.contains(&(pv as u16)) => self.font_cp_cur = Some(pv as u16),
+                    "cpg" if pv > 0 && wordz_doc::encoding::SINGLE_BYTE_CODE_PAGES.contains(&(pv as u16)) => self.font_cp_cur = Some(pv as u16),
                     _ => {}
                 }
                 return;
@@ -1379,7 +1379,7 @@ impl Reader {
             }
             "fs" => self.st.fmt.size = if pv > 0 { Some((pv as f32 / 2.0).clamp(1.0, 1638.0)) } else { None },
             "ansicpg" => {
-                if pv > 0 && wordcraft_doc::encoding::SINGLE_BYTE_CODE_PAGES.contains(&(pv as u16)) {
+                if pv > 0 && wordz_doc::encoding::SINGLE_BYTE_CODE_PAGES.contains(&(pv as u16)) {
                     self.ansicpg = pv as u16;
                 }
             }
@@ -1445,7 +1445,7 @@ impl Reader {
             | "brdrtbl"
                 if self.cell_side.is_some() || self.st.border_side.is_some() =>
             {
-                use wordcraft_doc::props::{Border, BorderStyle};
+                use wordz_doc::props::{Border, BorderStyle};
                 let style = match w {
                     "brdrnone" | "brdrnil" | "brdrtbl" => BorderStyle::None,
                     "brdrth" => BorderStyle::Thick,
@@ -1772,7 +1772,7 @@ pub fn import(bytes: &[u8]) -> Result<Document, String> {
     let mut doc = model::to_doc_in(&flow, page.section());
     for (which, blocks) in &headers_footers {
         let blocks = model::part_blocks(&mut doc, blocks);
-        let id = doc.add_part(if which.footer { wordcraft_doc::PartKind::Footer } else { wordcraft_doc::PartKind::Header }, blocks);
+        let id = doc.add_part(if which.footer { wordz_doc::PartKind::Footer } else { wordz_doc::PartKind::Header }, blocks);
         let set = if which.footer { &mut doc.last_section.footers } else { &mut doc.last_section.headers };
         match which.pages {
             HfPages::Default => set.default = Some(id),
@@ -1786,7 +1786,7 @@ pub fn import(bytes: &[u8]) -> Result<Document, String> {
     let dp = &mut doc.styles.default_para;
     dp.space_before = Some(0.0);
     dp.space_after = Some(0.0);
-    dp.line_spacing = Some(wordcraft_doc::props::LineSpacing::Multiple(1.0));
+    dp.line_spacing = Some(wordz_doc::props::LineSpacing::Multiple(1.0));
     if default_font.is_some() {
         doc.styles.default_chr.font = default_font;
     }
@@ -1852,13 +1852,13 @@ mod tests {
         // \pard resets them.
         assert!(paras[1].borders.is_none());
         let b = paras[2].borders.unwrap();
-        assert_eq!(b.top.map(|x| x.style), Some(wordcraft_doc::props::BorderStyle::Double));
+        assert_eq!(b.top.map(|x| x.style), Some(wordz_doc::props::BorderStyle::Double));
         assert!(b.left.is_some() && b.right.is_some() && b.bottom.is_none());
         // An empty paragraph with only a bottom border is still a rule.
         assert_eq!(paras[3].kind, Kind::Rule);
         // The document's paragraph carries them.
         let d = import(rtf).unwrap();
-        let first = d.body.iter().find_map(|b| if let wordcraft_doc::Block::Para(p) = &**b { Some(p) } else { None }).unwrap();
+        let first = d.body.iter().find_map(|b| if let wordz_doc::Block::Para(p) = &**b { Some(p) } else { None }).unwrap();
         assert!(first.props.borders.and_then(|b| b.bottom).is_some());
     }
 
@@ -1878,7 +1878,7 @@ mod tests {
             let p = id.and_then(|id| d.parts.get(&id)).unwrap();
             p.blocks
                 .iter()
-                .filter_map(|b| if let wordcraft_doc::Block::Para(p) = &**b { Some(p.text.clone()) } else { None })
+                .filter_map(|b| if let wordz_doc::Block::Para(p) = &**b { Some(p.text.clone()) } else { None })
                 .collect::<Vec<_>>()
                 .join("|")
         };
@@ -1899,7 +1899,7 @@ mod tests {
 
     #[test]
     fn paragraph_spacing_and_indents() {
-        use wordcraft_doc::props::LineSpacing;
+        use wordz_doc::props::LineSpacing;
         let rtf = br"{\rtf1\ansi
 \pard\sb120\sa150\sl360\slmult1\li720\ri360\fi-360 a\par
 \pard\sl-280 b\par
@@ -1919,7 +1919,7 @@ mod tests {
         let d = import(rtf).unwrap();
         assert_eq!(d.styles.default_para.space_after, Some(0.0));
         assert_eq!(d.styles.default_para.line_spacing, Some(LineSpacing::Multiple(1.0)));
-        let first = d.body.iter().find_map(|b| if let wordcraft_doc::Block::Para(p) = &**b { Some(p) } else { None }).unwrap();
+        let first = d.body.iter().find_map(|b| if let wordz_doc::Block::Para(p) = &**b { Some(p) } else { None }).unwrap();
         assert_eq!(first.props.space_after, Some(7.5));
         assert_eq!(first.props.indent_first, Some(-18.0));
     }
@@ -1933,7 +1933,7 @@ mod tests {
         assert_eq!(d.styles.default_chr.font.as_deref(), Some("Arial"));
         // No font table: our default stays.
         let d = import(br"{\rtf1\ansi x\par}").unwrap();
-        assert_eq!(d.styles.default_chr.font, wordcraft_doc::StyleSheet::builtin().default_chr.font);
+        assert_eq!(d.styles.default_chr.font, wordz_doc::StyleSheet::builtin().default_chr.font);
     }
 
     #[test]
@@ -1947,7 +1947,7 @@ mod tests {
         assert!(d.last_section.landscape && d.last_section.page_w > d.last_section.page_h);
         // Nonsense keeps Word's defaults.
         let d = import(br"{\rtf1\ansi\paperw0\margl99999 x\par}").unwrap();
-        assert_eq!(d.last_section, wordcraft_doc::SectionProps::default());
+        assert_eq!(d.last_section, wordz_doc::SectionProps::default());
     }
 
     #[test]
@@ -1973,12 +1973,12 @@ mod tests {
         let b = t.rows[0][0].borders.unwrap();
         assert!(b.top.is_none() && b.left.is_none() && b.right.is_none());
         let bottom = b.bottom.unwrap();
-        assert_eq!((bottom.style, bottom.width, bottom.color), (wordcraft_doc::props::BorderStyle::Single, 0.75, Some(Rgb(174, 174, 174))));
+        assert_eq!((bottom.style, bottom.width, bottom.color), (wordz_doc::props::BorderStyle::Single, 0.75, Some(Rgb(174, 174, 174))));
         // Every side, in different styles, per cell.
         let f = parse(br"{\rtf1\ansi\trowd\clbrdrt\brdrdb\clbrdrl\brdrs\brdrw10\clbrdrb\brdrdot\clbrdrr\brdrth\cellx2000\cellx4000\pard\intbl a\cell b\cell\row}").unwrap();
         let FBlock::Table(t) = &f.blocks[0] else { panic!() };
         let b = t.rows[0][0].borders.unwrap();
-        use wordcraft_doc::props::BorderStyle as S;
+        use wordz_doc::props::BorderStyle as S;
         assert_eq!(
             [b.top.map(|x| x.style), b.left.map(|x| x.style), b.bottom.map(|x| x.style), b.right.map(|x| x.style)],
             [Some(S::Double), Some(S::Single), Some(S::Dotted), Some(S::Thick)]
@@ -1991,12 +1991,12 @@ mod tests {
         assert!(t.rows[0][0].borders.is_none());
         // The document's cells carry them.
         let d = import(br"{\rtf1\ansi\trowd\clbrdrb\brdrs\cellx2000\pard\intbl a\cell\row}").unwrap();
-        let t = d.body.iter().find_map(|b| if let wordcraft_doc::Block::Table(t) = &**b { Some(t) } else { None }).unwrap();
+        let t = d.body.iter().find_map(|b| if let wordz_doc::Block::Table(t) = &**b { Some(t) } else { None }).unwrap();
         assert!(t.props.style.is_none());
         assert!(t.rows[0].cells[0].props.borders.and_then(|b| b.bottom).is_some());
         // The table sizes to the document's page, not Letter.
         let d = import(br"{\rtf1\ansi\paperw11906\margl1134\margr1134\trowd\cellx4818\cellx9638\pard\intbl a\cell b\cell\row}").unwrap();
-        let t = d.body.iter().find_map(|b| if let wordcraft_doc::Block::Table(t) = &**b { Some(t) } else { None }).unwrap();
+        let t = d.body.iter().find_map(|b| if let wordz_doc::Block::Table(t) = &**b { Some(t) } else { None }).unwrap();
         assert_eq!(t.grid, [240.9, 241.0]);
     }
 

@@ -1,9 +1,9 @@
-//! Office Math (OMML, ECMA-376 Part 1 §22.1) → [`wordcraft_doc::math`] tree.
+//! Office Math (OMML, ECMA-376 Part 1 §22.1) → [`wordz_doc::math`] tree.
 
-use wordcraft_doc::math::{
+use wordz_doc::math::{
     Arg, BrkBin, BrkBinSub, ColJc, FracKind, LimLoc, MAX_DEPTH, MNode, MRun, MScr, MSty, Math, MathJc, MathProps, ScriptKind, merge_runs,
 };
-use wordcraft_doc::props::Rgb;
+use wordz_doc::props::Rgb;
 
 use crate::xml::El;
 
@@ -333,7 +333,7 @@ mod tests {
         let MNode::Rad { deg_hide, e, .. } = &num[1] else { panic!() };
         assert!(*deg_hide);
         assert!(matches!(e[0], MNode::Script { kind: ScriptKind::Sup, .. }));
-        assert_eq!(wordcraft_doc::math::to_linear(&m.nodes), "x=(-b±√(b^2-4ac))/2a");
+        assert_eq!(wordz_doc::math::to_linear(&m.nodes), "x=(-b±√(b^2-4ac))/2a");
         assert!(m.omml.starts_with("<m:oMath>"));
     }
 

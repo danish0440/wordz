@@ -17,7 +17,7 @@ native-speaker review (human).
 - **120 proofing tools** (`SharedSupport/Proofing Tools`): spellers for ~50 languages, grammar
   checkers for ~20, hyphenators for ~16, thesauri for ~20.
 
-## What WordCraft ships (measured)
+## What WordZ ships (measured)
 
 - **19 interface languages**: English plus `zh-hans`, `zh-hant`, `ja`, `uk`, `es`, `pt-br`,
   Serbian `sr`/`sr-latn` (#250), Estonian `et`, Turkish `tr`, Russian `ru`, Italian `it` (#594), German `de` (#574), Polish `pl`, Czech `cs`, Hungarian `hu`, French `fr` and Bulgarian `bg`. Catalogs have 2,057–2,454 entries
@@ -82,7 +82,7 @@ documents in Polish (`pl-PL`).
 | Language | Spelling | Suggestions | Grammar | Hyphenation |
 |---|---|---|---|---|
 | English (`en`, any region; text with no language) | Moby word list (public domain, ~160k words) with inflection rules | edit distance | repeated word, `a`/`an`, sentence capital, space before punctuation, double space | Moby dictionary, our Liang patterns, heuristic |
-| Polish (`pl`) | The Hunspell `pl_PL` dictionary installed on the system (OS package, Homebrew, LibreOffice, or the `WORDCRAFT_DICTIONARIES` folder; not bundled, so no Polish spelling marks without it), read at runtime by a Hunspell-style affix engine (`crates/proof/src/affix.rs`); names capitalized, compounds part by part, `Kennedy'ego` | missing diacritics first (`zolw` → `żółw`), the dictionary's confusion table (`żeka` → `rzeka`, `chuśtawka` → `huśtawka`), missing space (`napewno` → `na pewno`), one typo, then a stem scan within two typos | Polish messages: repeated word, space before punctuation, double space, sentence capital (knows `np.`, `r.`, initials, ordinals, dialogue dashes), missing comma before `że`/`który`/`ponieważ`/`gdyż`/`aby`/`żeby`/`jeśli`/`jeżeli`/`gdyby`/`lecz` (not after `mimo`, `chyba`, `tak`, prepositions…), `we`/`ze` (`we wtorek`, `ze szkoły`), doubled punctuation | TeX Polish patterns (Kołodziejska, Jackowski, Ryćko; MIT option) with their 20 exception words; a Polish syllable heuristic for letters outside the alphabet |
+| Polish (`pl`) | The Hunspell `pl_PL` dictionary installed on the system (OS package, Homebrew, LibreOffice, or the `WORDZ_DICTIONARIES` folder; not bundled, so no Polish spelling marks without it), read at runtime by a Hunspell-style affix engine (`crates/proof/src/affix.rs`); names capitalized, compounds part by part, `Kennedy'ego` | missing diacritics first (`zolw` → `żółw`), the dictionary's confusion table (`żeka` → `rzeka`, `chuśtawka` → `huśtawka`), missing space (`napewno` → `na pewno`), one typo, then a stem scan within two typos | Polish messages: repeated word, space before punctuation, double space, sentence capital (knows `np.`, `r.`, initials, ordinals, dialogue dashes), missing comma before `że`/`który`/`ponieważ`/`gdyż`/`aby`/`żeby`/`jeśli`/`jeżeli`/`gdyby`/`lecz` (not after `mimo`, `chyba`, `tak`, prepositions…), `we`/`ze` (`we wtorek`, `ze szkoły`), doubled punctuation | TeX Polish patterns (Kołodziejska, Jackowski, Ryćko; MIT option) with their 20 exception words; a Polish syllable heuristic for letters outside the alphabet |
 | Portuguese (`pt`, any region) | The Hunspell `pt_BR` dictionary installed on the system — VERO and its derivatives (same places as Polish; not bundled, LGPL/MPL), read at runtime by the same affix engine, which reads its `FLAG UTF-8`, 106 flags, continuation classes and `FORBIDDENWORD` spellings; names capitalized, compounds part by part (`guarda-roupa`, `ex-marido`) | missing accents first (`coraçao` → `coração`, `saude` → `saúde`), the dictionary's confusion table (`seje` → `seja`, `excessão` → `exceção`), missing space (`nãoé` → `não é`), one typo, then an accent-folding stem scan | Portuguese messages: repeated word (the emphatic doubles are allowed), space before punctuation, double space, sentence capital (knows `etc.`, `pág.`, `Dr.`, initials, ordinals, dialogue dashes), doubled punctuation; no comma rule — `que` opens a clause only sometimes | TeX Portuguese patterns (Rezende, Almeida, Araujo, Benevides; BSD 3-clause) with their 2 exception words |
 | Italian (`it`, any region) | The Hunspell `it_IT` dictionary installed on the system (same places as Polish and Portuguese; not bundled — the upstream file is GPL-licensed), read at runtime by the same affix engine; elided forms check the word after the apostrophe (`l'amico`, `un'idea`, `c'è`), hyphenated compounds part by part | missing accents first (`caffe` → `caffè`, `perche` → `perché`), the dictionary's confusion table, missing space (`perme` → `per me`), one typo, then an accent-folding stem scan | Italian messages: repeated word (emphatic doubles like `piano piano` are allowed), space before punctuation, double space, sentence capital (knows `ecc.`, `dott.`, `prof.`, initials, ordinals), doubled punctuation; no comma rule | TeX Italian patterns (Beccari; MIT option), no exception words |
 | Any other | — (no marks) | — | — | the English patterns, as before |
@@ -125,16 +125,16 @@ choice still wins; its Automatic entry follows the region again.
 Where the region comes from:
 - **File › Options › Advanced › Region** (saved; agents: `file.options {"region": "pl-PL"}`, `auto`
   returns to the system's);
-- else `WORDCRAFT_REGION` or `LC_ALL`;
+- else `WORDZ_REGION` or `LC_ALL`;
 - else, on Unix, each convention from its own locale: numbers from `LC_NUMERIC` (else `LANG`),
   paper from `LC_PAPER`, measurement from `LC_MEASUREMENT`;
 - else the platform's preferred locale: the macOS preferred locale (`en-PL`), the browser's
   language on the web, and on Windows the home location (Settings › Time & language › Region)
   with the display language. Word follows Windows' regional format instead, so an en-US format
   set by someone living in Germany gives A4 and a decimal comma here; reading the regional format
-  needs Win32 calls that are `unsafe` in Rust, which WordCraft forbids.
+  needs Win32 calls that are `unsafe` in Rust, which WordZ forbids.
 
-Runs without preferences (`WORDCRAFT_NO_PREFS`) stay `en-US` unless `WORDCRAFT_REGION` is set, so
+Runs without preferences (`WORDZ_NO_PREFS`) stay `en-US` unless `WORDZ_REGION` is set, so
 agents and screenshots give the same result on every machine. The decimal separator belongs to
 the language's own number format (CLDR): a decimal-comma language uses a comma everywhere except
 where CLDR says otherwise (`de-CH`), and English, whose `en-XX` locales follow the territory, uses a
@@ -143,7 +143,7 @@ in any territory (`ja-PL` is `2.54 cm`), as CLDR's fallback to the language give
 
 Templates (Letter, Resume, Report) keep their own size. Not yet: Word's "Default paper size"
 preference of its own, and Word's locale-specific Normal margins (2,5 cm in some regions;
-WordCraft keeps 2,54 cm).
+WordZ keeps 2,54 cm).
 
 ## Shared work (not in the per-language hours)
 
@@ -161,7 +161,7 @@ WordCraft keeps 2,54 cm).
 |---|---|---|
 | 2026-10-12 | minor | Italian proofing: it-IT spelling from the installed Hunspell dictionary (system `it_IT`, never bundled — upstream is GPL), accent-first suggestions, conservative grammar with Italian messages, TeX Italian hyphenation patterns (MIT option); Review › Language already offered Italian; an `it` interface writes it-IT documents |
 | 2026-10-11 | minor | Turkish interface catalog completed (2,325 entries, the same keys as Russian): equation gallery, built-in style names, watermarks, paper sizes and preview tiles; the interface audit checks Turkish too (#774) |
-| 2026-10-12 | trivial | Region conventions: File › Options › Advanced › Region (saved) and an Automatic units entry; Unix `LC_PAPER`/`LC_MEASUREMENT`/`LC_NUMERIC` each decide their own convention; the web reads the browser's locale; `WORDCRAFT_NO_PREFS` runs stay en-US; where the decimal separator comes from (#838 review) |
+| 2026-10-12 | trivial | Region conventions: File › Options › Advanced › Region (saved) and an Automatic units entry; Unix `LC_PAPER`/`LC_MEASUREMENT`/`LC_NUMERIC` each decide their own convention; the web reads the browser's locale; `WORDZ_NO_PREFS` runs stay en-US; where the decimal separator comes from (#838 review) |
 | 2026-10-12 | minor | New blank documents follow the system region: A4 outside the Letter territories, centimetres outside the US, the region's decimal separator in length fields; explicit Measurement units choice wins (#838) |
 | 2026-10-11 | minor | Czech (`cs`) interface catalog added |
 | 2026-10-12 | minor | Portuguese proofing: pt-BR spelling from the installed VERO dictionary (the affix engine grew `FLAG UTF-8`, 128 flag bits, continuation classes and `FORBIDDENWORD`), accent-first suggestions, conservative grammar with Portuguese messages, TeX Portuguese hyphenation patterns (BSD 3-clause); Review › Language offers Português (Brasil); a pt-br interface writes pt-BR documents; dimension ~27% → ~28% |

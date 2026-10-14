@@ -10,8 +10,8 @@ use egui::{Ui, vec2};
 use serde::Serialize;
 use serde_json::{Value, json};
 
-use wordcraft_doc::section::LineNumberRestart;
-use wordcraft_engine::cmd::mailings::{ENVELOPE_SIZES, LABEL_PRODUCTS};
+use wordz_doc::section::LineNumberRestart;
+use wordz_engine::cmd::mailings::{ENVELOPE_SIZES, LABEL_PRODUCTS};
 
 use crate::WordApp;
 use crate::options::MeasureExt;
@@ -112,7 +112,7 @@ fn run(app: &mut WordApp, id: &str, params: Value) -> bool {
     }
 }
 
-fn unit() -> wordcraft_geom::Unit {
+fn unit() -> wordz_geom::Unit {
     crate::options::unit()
 }
 
@@ -135,7 +135,7 @@ pub struct LineNumbersForm {
 
 impl LineNumbersForm {
     pub fn read(app: &WordApp) -> LineNumbersForm {
-        let sp = wordcraft_engine::cmd::page::sect(&app.session);
+        let sp = wordz_engine::cmd::page::sect(&app.session);
         let l = sp.line_numbers.clone();
         let cur = l.clone().unwrap_or_default();
         LineNumbersForm {
@@ -272,7 +272,7 @@ pub struct ManualForm {
 impl ManualForm {
     /// From the selection, or from the start of the document.
     pub fn start(app: &mut WordApp) -> ManualForm {
-        let from = if app.session.sel.is_collapsed() { Value::Null } else { wordcraft_engine::cmd::pos_json(&app.session.sel.ordered().0) };
+        let from = if app.session.sel.is_collapsed() { Value::Null } else { wordz_engine::cmd::pos_json(&app.session.sel.ordered().0) };
         let from = if from.is_null() { json!({"block": 0, "off": 0}) } else { from };
         Self::next(app, from)
     }
@@ -632,14 +632,14 @@ fn labels_ui(app: &mut WordApp, ui: &mut Ui, f: &mut LabelsForm) -> bool {
 #[cfg(test)]
 mod tests {
     use serde_json::json;
-    use wordcraft_engine::Session;
+    use wordz_engine::Session;
 
     use super::*;
     use crate::dialogs::Dialog;
     use crate::{Services, WordApp};
 
     fn app() -> WordApp {
-        WordApp::new(Session::new(wordcraft_doc::Document::from_text("Dear Jo,\nThanks.")), Services::default())
+        WordApp::new(Session::new(wordz_doc::Document::from_text("Dear Jo,\nThanks.")), Services::default())
     }
 
     fn form(a: &mut WordApp) -> LayoutDialog {
@@ -685,7 +685,7 @@ mod tests {
         a.run("ui.dialog", json!({"name": "lineNumbers"})).unwrap();
         let LayoutDialog::LineNumbers(f) = form(&mut a) else { panic!("line numbers") };
         assert!(!f.auto_distance);
-        let cm = 18.0 / wordcraft_geom::PT_PER_CM;
+        let cm = 18.0 / wordz_geom::PT_PER_CM;
         assert!((f.distance - cm).abs() < 0.01, "distance was {} cm", f.distance);
         let sent = f.params()["distance"].as_f64().unwrap_or_default();
         assert!((sent - 18.0).abs() < 0.05, "params sent {sent} pt");
@@ -693,7 +693,7 @@ mod tests {
         a.run("layout.hyphenation", json!({"value": true, "zone": 36.0})).unwrap();
         a.run("ui.dialog", json!({"name": "hyphenation"})).unwrap();
         let LayoutDialog::Hyphenation(h) = form(&mut a) else { panic!("hyphenation") };
-        assert!((h.zone - 36.0 / wordcraft_geom::PT_PER_CM).abs() < 0.01, "zone was {} cm", h.zone);
+        assert!((h.zone - 36.0 / wordz_geom::PT_PER_CM).abs() < 0.01, "zone was {} cm", h.zone);
         let sent = h.params()["zone"].as_f64().unwrap_or_default();
         assert!((sent - 36.0).abs() < 0.05, "params sent {sent} pt");
     }
@@ -738,7 +738,7 @@ mod tests {
         let secs = a.session.doc.sections();
         assert_eq!(secs.len(), 2);
         assert!((secs[0].1.page_w - 623.6).abs() < 0.1);
-        assert!(a.session.doc.plain_text(wordcraft_doc::StoryRef::Body).contains("Thanks."));
+        assert!(a.session.doc.plain_text(wordz_doc::StoryRef::Body).contains("Thanks."));
     }
 
     /// #407: Labels builds a new document of the chosen sheet, or a single label.
@@ -751,7 +751,7 @@ mod tests {
         f.product = LABEL_PRODUCTS.iter().position(|p| p.id == "a4-3x8").unwrap();
         let r = a.session.run("mailings.labels", &f.params()).unwrap();
         assert_eq!(r["labels"], 24);
-        assert_eq!(a.session.doc.plain_text(wordcraft_doc::StoryRef::Body).matches("Ada Lovelace").count(), 24);
+        assert_eq!(a.session.doc.plain_text(wordz_doc::StoryRef::Body).matches("Ada Lovelace").count(), 24);
         f.single = true;
         (f.row, f.col) = (3, 2);
         assert_eq!(a.session.run("mailings.labels", &f.params()).unwrap()["filled"], 1);

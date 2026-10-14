@@ -3,13 +3,13 @@
 //! results are what Word produces for the same keys.
 
 use serde_json::json;
-use wordcraft_doc::props::{BorderStyle, VertAlign};
-use wordcraft_doc::{Pos, StoryRef};
+use wordz_doc::props::{BorderStyle, VertAlign};
+use wordz_doc::{Pos, StoryRef};
 
 use crate::Session;
 
 fn s() -> Session {
-    Session::new(wordcraft_doc::Document::new())
+    Session::new(wordz_doc::Document::new())
 }
 
 fn run(s: &mut Session, id: &str, v: serde_json::Value) {
@@ -108,7 +108,7 @@ fn sample_text_preserves_typing_and_paragraph_formatting() {
     run(&mut s, "para.alignCenter", json!({}));
     typ(&mut s, "=rand(2,1)\n");
     for p in s.doc.body.iter().filter_map(|b| b.as_para()).take(2) {
-        assert_eq!(p.props.align, Some(wordcraft_doc::props::Align::Center));
+        assert_eq!(p.props.align, Some(wordz_doc::props::Align::Center));
         assert_eq!(p.props_at(0).bold, Some(true));
     }
 }
@@ -229,7 +229,7 @@ fn list_autoformat_triggers() {
     assert_eq!(paras(&s), vec![para("Alpha", Some(0)), para("beta", Some(0))]);
     assert_eq!(label_at(&s, 0), "%1.");
     let n = s.doc.para_at(&Pos::body(0, 0)).and_then(|p| p.props.numbering).unwrap();
-    assert_eq!(s.doc.numbering.level(n.num, 0).map(|l| l.format), Some(wordcraft_doc::section::NumFormat::LowerLetter));
+    assert_eq!(s.doc.numbering.level(n.num, 0).map(|l| l.format), Some(wordz_doc::section::NumFormat::LowerLetter));
 }
 
 #[test]
@@ -312,11 +312,11 @@ fn autocorrect_replacement_list_follows_the_texts_language() {
 fn autocorrect_options_change_what_typing_does() {
     let mut s = s();
     // A user entry, a deleted built-in entry, an added exception; names of days.
-    run(&mut s, "tools.autocorrect", json!({"add": {"from": "wc", "to": "WordCraft"}}));
+    run(&mut s, "tools.autocorrect", json!({"add": {"from": "wc", "to": "WordZ"}}));
     run(&mut s, "tools.autocorrect", json!({"delete": "teh"}));
     run(&mut s, "tools.autocorrect", json!({"addException": "approx."}));
     typ(&mut s, "wc ships on monday. teh end is approx. three weeks ");
-    assert_eq!(s.doc.plain_text(StoryRef::Body), "WordCraft ships on Monday. Teh end is approx. three weeks ");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "WordZ ships on Monday. Teh end is approx. three weeks ");
     // AutoFormat options off: straight quotes, no dashes, no list; sentences not capitalised.
     let mut s = self::s();
     run(&mut s, "tools.autocorrect", json!({"smartQuotes": false, "dashes": false, "bullets": false, "capSentences": false, "capDays": false}));
@@ -396,7 +396,7 @@ fn undo_right_after_a_border_line_brings_the_characters_back() {
 #[test]
 fn plus_and_hyphen_line_becomes_a_table() {
     let mut s = typed("+--+------+\nA");
-    let Some(wordcraft_doc::Block::Table(t)) = s.doc.body.first().map(|b| &**b) else { panic!("no table: {:?}", paras(&s)) };
+    let Some(wordz_doc::Block::Table(t)) = s.doc.body.first().map(|b| &**b) else { panic!("no table: {:?}", paras(&s)) };
     assert_eq!(t.rows.len(), 1);
     assert_eq!(t.grid.len(), 2);
     assert!((t.grid[1] / t.grid[0] - 3.0).abs() < 0.01, "widths follow the hyphens: {:?}", t.grid);
@@ -435,7 +435,7 @@ fn smileys_are_replaced_inside_words_too() {
 
 #[test]
 fn a_large_mixed_document_types_like_word() {
-    // The corpus typed into Word and WordCraft side by side; the paragraph structure must match.
+    // The corpus typed into Word and WordZ side by side; the paragraph structure must match.
     let mut s = s();
     let prose = "The keeper's log runs to four hundred pages, and almost every one begins with the weather. ";
     typ(&mut s, &format!("Notes\n{}\n", prose.repeat(20)));
@@ -604,7 +604,7 @@ fn undoing_bold_at_the_caret_turns_bold_typing_off_again() {
     assert_eq!(p.text, "abc");
     assert_ne!(p.props_of_char(0).bold, Some(true));
     // Redo brings bold typing back.
-    let mut s = Session::new(wordcraft_doc::Document::new());
+    let mut s = Session::new(wordz_doc::Document::new());
     run(&mut s, "format.bold", json!({"value": true}));
     run(&mut s, "edit.undo", json!({}));
     run(&mut s, "edit.redo", json!({}));
@@ -754,7 +754,7 @@ fn shift_f5_goes_back_through_the_last_edits() {
     assert_eq!(back(), Pos::body(1, 3));
     assert_eq!(back(), Pos::body(0, 3));
     assert_eq!(back(), Pos::body(2, 5), "then round again");
-    assert!(Session::new(wordcraft_doc::Document::new()).run("edit.goBack", &json!({})).is_err(), "nothing edited yet");
+    assert!(Session::new(wordz_doc::Document::new()).run("edit.goBack", &json!({})).is_err(), "nothing edited yet");
 }
 
 #[test]
@@ -902,7 +902,7 @@ fn typing_rtl_letters_into_an_empty_paragraph_makes_it_rtl() {
     let s = typed("سلام\nHello");
     assert_eq!(bidi(&s, 1), Some(true), "Enter carries the paragraph's direction on, as in Word");
     // A style that sets left-to-right wins.
-    let mut doc = Session::new(wordcraft_doc::Document::new());
+    let mut doc = Session::new(wordz_doc::Document::new());
     if let Some(st) = doc.doc.styles.get_mut("Normal") {
         st.para.bidi = Some(false);
     }

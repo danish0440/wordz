@@ -1,5 +1,5 @@
-//! WordCraft's egui front end: a Word-style window (title bar with Quick Access Toolbar, ribbon,
-//! rulers, page canvas, panes, status bar, Backstage, dialogs) over `wordcraft-engine`.
+//! WordZ's egui front end: a Word-style window (title bar with Quick Access Toolbar, ribbon,
+//! rulers, page canvas, panes, status bar, Backstage, dialogs) over `wordz-engine`.
 //!
 //! The UI is thin: it reads `Session` state and acts through [`WordApp::run`] (command ids), so
 //! the menus, ribbon, shortcuts, control channel and MCP all reach the same behaviour.
@@ -81,7 +81,7 @@ pub mod zotero;
 
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
-use wordcraft_engine::Session;
+use wordz_engine::Session;
 
 pub use control::ControlRequest;
 pub use file_dialogs::{FileDialogAnswer, FileDialogRequest, open_filters};
@@ -146,7 +146,7 @@ pub struct Services {
     pub store_font: Option<Box<dyn Fn(&str, &[u8])>>,
     /// Web: forget a stored font (its stored file name) once the user removes it.
     pub forget_font: Option<Box<dyn Fn(&str)>>,
-    /// Desktop: File › Options › General › Make WordCraft the default for Word documents (#295),
+    /// Desktop: File › Options › General › Make WordZ the default for Word documents (#295),
     /// only from that button (never a programmatic command). Windows opens the Settings app's
     /// Default apps page (apps can't set defaults themselves); Linux and BSD set it with
     /// `xdg-mime`. `None` (web, macOS) hides the button; macOS shows how to do it in Finder
@@ -157,9 +157,9 @@ pub struct Services {
 /// What [`Services::make_default_app`] did.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DefaultApp {
-    /// The system's default-apps settings opened; the user picks WordCraft there (Windows).
+    /// The system's default-apps settings opened; the user picks WordZ there (Windows).
     SettingsOpened,
-    /// WordCraft is now the default app for Word documents (Linux, BSD).
+    /// WordZ is now the default app for Word documents (Linux, BSD).
     MadeDefault,
 }
 
@@ -207,7 +207,7 @@ pub struct UiState {
     /// Interface language: `auto` (follow the system) or a code from [`i18n::LANGUAGES`].
     pub language: String,
     /// Editing preferences; the session owns them while running (see [`WordApp::prefs`]).
-    pub editing: wordcraft_engine::Prefs,
+    pub editing: wordz_engine::Prefs,
     /// Read Aloud speed (1 = normal) and whether it skips citations and bibliographies.
     pub read_aloud_rate: f32,
     pub read_aloud_skip_citations: bool,
@@ -234,21 +234,21 @@ pub struct UiState {
     /// (off).
     pub caret_animation: bool,
     /// Custom keyboard shortcuts (Customize Keyboard, #368); the session owns them while running.
-    pub keyboard: wordcraft_engine::KeyMap,
+    pub keyboard: wordz_engine::KeyMap,
     /// Custom ribbon tabs and groups, hidden tabs and the Quick Access Toolbar (Customize Ribbon,
     /// #379); the session owns them while running.
-    pub ribbon: wordcraft_engine::RibbonLayout,
+    pub ribbon: wordz_engine::RibbonLayout,
     /// Caption labels the user added (References › Insert Caption › New Label), kept between
     /// runs like Word keeps them in its Normal template (#402).
     pub caption_labels: Vec<String>,
     /// Draw › Add Pen: the pens added to the pen gallery; the session owns them while running.
     /// Entries that aren't pens are dropped on reading.
-    #[serde(deserialize_with = "wordcraft_engine::cmd::draw::lenient_pens")]
-    pub ink_pens: Vec<wordcraft_engine::cmd::draw::CustomPen>,
+    #[serde(deserialize_with = "wordz_engine::cmd::draw::lenient_pens")]
+    pub ink_pens: Vec<wordz_engine::cmd::draw::CustomPen>,
     /// File › Options › General: initials for comments; empty = the user name's. The session
     /// owns them while running, like `author`.
     pub initials: String,
-    /// The File › Options pane last shown ([`wordcraft_engine::cmd::options::PANES`]).
+    /// The File › Options pane last shown ([`wordz_engine::cmd::options::PANES`]).
     pub options_pane: String,
     /// File › Options › Advanced: how many recent documents File › Home and Open list (0–50).
     pub recent_count: usize,
@@ -291,7 +291,7 @@ impl Default for UiState {
             author: String::new(),
             window: None,
             language: i18n::AUTO.into(),
-            editing: wordcraft_engine::Prefs::default(),
+            editing: wordz_engine::Prefs::default(),
             read_aloud_rate: 1.0,
             read_aloud_skip_citations: true,
             keytips_enabled: true,
@@ -301,8 +301,8 @@ impl Default for UiState {
             alt_chord_used: false,
             dark_page: false,
             caret_animation: true,
-            keyboard: wordcraft_engine::KeyMap::default(),
-            ribbon: wordcraft_engine::RibbonLayout::default(),
+            keyboard: wordz_engine::KeyMap::default(),
+            ribbon: wordz_engine::RibbonLayout::default(),
             caption_labels: Vec::new(),
             ink_pens: Vec::new(),
             initials: String::new(),
@@ -373,7 +373,7 @@ pub struct WordApp {
     /// Web: a recipient list was asked for (Select Recipients › Use an Existing List…), so the
     /// next text file from the picker loads as recipients instead of opening (#240).
     pub recipient_list_pending: bool,
-    /// The font database's [`generation`](wordcraft_fonts::FontDb::generation) last seen: when
+    /// The font database's [`generation`](wordz_fonts::FontDb::generation) last seen: when
     /// fonts are added or removed (by any route) the font lists and the layout are refreshed.
     font_generation: u64,
     /// A file picked for the open dialog (Templates and Add-ins › Attach…, Organizer ›
@@ -438,11 +438,11 @@ pub struct WordApp {
     /// The egui context, once the first frame has run (background work wakes the UI with it).
     pub(crate) ctx: Option<egui::Context>,
     /// Read Aloud: the start of the sentence the caret was last moved to, and the last error shown.
-    pub(crate) read_aloud_at: Option<wordcraft_engine::doc::Pos>,
+    pub(crate) read_aloud_at: Option<wordz_engine::doc::Pos>,
     pub(crate) read_aloud_error: Option<String>,
     /// The file the document was last explicitly saved to in this session; AutoSave writes only
     /// there. A file that was merely opened isn't rewritten until the user saves it: saving drops
-    /// whatever WordCraft can't represent (content controls, charts, macros…).
+    /// whatever WordZ can't represent (content controls, charts, macros…).
     autosave_path: Option<std::path::PathBuf>,
     /// The file dialog the host is showing, and what its answer is for ([`file_dialogs`]).
     file_dialog: Option<file_dialogs::PendingDialog>,
@@ -483,7 +483,7 @@ impl WordApp {
     pub fn new(session: Session, services: Services) -> Self {
         // Numeral › System follows the system locale, found here rather than in layout.
         if let Some(tag) = sys_locale::get_locale() {
-            wordcraft_engine::set_system_locale(&tag);
+            wordz_engine::set_system_locale(&tag);
         }
         WordApp {
             session,
@@ -537,7 +537,7 @@ impl WordApp {
             autosave_path: None,
             change_picture_target: None,
             recipient_list_pending: false,
-            font_generation: wordcraft_fonts::FontDb::global().generation(),
+            font_generation: wordz_fonts::FontDb::global().generation(),
             dialog_pick: None,
             file_dialog: None,
             #[cfg(not(target_arch = "wasm32"))]
@@ -580,7 +580,7 @@ impl WordApp {
         let mut ui = self.ui.clone();
         ui.author = self.session.author.clone();
         ui.initials = self.session.initials.clone();
-        ui.dictionary = wordcraft_engine::proof::user_dictionary();
+        ui.dictionary = wordz_engine::proof::user_dictionary();
         ui.editing = self.session.prefs.clone();
         ui.read_aloud_rate = self.session.read_aloud.rate();
         ui.read_aloud_skip_citations = self.session.read_aloud.skip_citations;
@@ -609,11 +609,11 @@ impl WordApp {
         if !author.trim().is_empty() {
             self.session.author = author;
         }
-        self.session.initials = std::mem::take(&mut self.ui.initials).chars().take(wordcraft_engine::cmd::options::MAX_INITIALS_CHARS).collect();
+        self.session.initials = std::mem::take(&mut self.ui.initials).chars().take(wordz_engine::cmd::options::MAX_INITIALS_CHARS).collect();
         for w in std::mem::take(&mut self.ui.dictionary).iter().take(MAX_DICTIONARY) {
             let w = w.trim();
-            if !w.is_empty() && w.chars().count() <= wordcraft_engine::cmd::options::MAX_WORD_CHARS {
-                wordcraft_engine::proof::add_word(w);
+            if !w.is_empty() && w.chars().count() <= wordz_engine::cmd::options::MAX_WORD_CHARS {
+                wordz_engine::proof::add_word(w);
             }
         }
         self.session.prefs = std::mem::take(&mut self.ui.editing);
@@ -718,7 +718,7 @@ impl WordApp {
             if matches!(id, "file.save" | "file.saveAs")
                 && let Some(pw) = params.get("password").filter(|v| !v.is_null())
             {
-                if !wordcraft_engine::io::can_encrypt(&name) || pw.as_str().is_none_or(str::is_empty) {
+                if !wordz_engine::io::can_encrypt(&name) || pw.as_str().is_none_or(str::is_empty) {
                     return Err("only Word documents (.docx, .docm, .dotx, .dotm) can be saved with a password, and it can't be empty".into());
                 }
                 self.session.run("file.encrypt", &json!({"password": pw})).map_err(|e| e.to_string())?;
@@ -729,9 +729,9 @@ impl WordApp {
             }
             // Word documents are encrypted with the document's password, if it has one.
             let password =
-                if matches!(id, "file.save" | "file.saveAs") { self.session.password.as_ref().map(wordcraft_engine::Password::as_str) } else { None };
-            let opts = wordcraft_engine::cmd::file::export_options(&self.session, &params);
-            let bytes = wordcraft_engine::io::save_bytes_with(&name, &self.session.doc, password, &opts)?;
+                if matches!(id, "file.save" | "file.saveAs") { self.session.password.as_ref().map(wordz_engine::Password::as_str) } else { None };
+            let opts = wordz_engine::cmd::file::export_options(&self.session, &params);
+            let bytes = wordz_engine::io::save_bytes_with(&name, &self.session.doc, password, &opts)?;
             if let Some(d) = &self.services.download
                 && let Err(e) = d(&name, &bytes)
             {
@@ -781,7 +781,7 @@ impl WordApp {
             "font.add" => {
                 if let (Some(store), Some(file), Some(data)) =
                     (&self.services.store_font, result.get("file").and_then(Value::as_str), params.get("data").and_then(Value::as_str))
-                    && let Some(bytes) = wordcraft_engine::cmd::insert::base64_decode(data)
+                    && let Some(bytes) = wordz_engine::cmd::insert::base64_decode(data)
                 {
                     store(file, &bytes);
                 }
@@ -802,7 +802,7 @@ impl WordApp {
     /// Fonts were added or removed (a command, the web shell loading stored fonts): lay out
     /// again and refresh the font lists and their previews.
     fn watch_fonts(&mut self, ctx: &egui::Context) {
-        let db = wordcraft_fonts::FontDb::global();
+        let db = wordz_fonts::FontDb::global();
         let generation = db.generation();
         if generation == self.font_generation {
             return;
@@ -848,7 +848,7 @@ impl WordApp {
         let retry = (id == "file.open").then(|| params.clone());
         let r = self.execute(id, params);
         if let (Err(e), Some(params)) = (&r, retry)
-            && wordcraft_engine::io::needs_password(e)
+            && wordz_engine::io::needs_password(e)
         {
             let path = params.get("path").and_then(Value::as_str).unwrap_or("");
             let name = std::path::Path::new(path).file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_else(|| path.to_string());
@@ -1161,18 +1161,18 @@ impl WordApp {
             // Native printing submits the selected queue on a worker; the browser owns its dialog.
             "ui.printSettings" => return Some(printing::settings(&mut self.printing, p, self.services.printers.as_ref())),
             "ui.print" | "ui.printSubmit" => return Some(self.print_to_system(p)),
-            // File › Options › General › Make WordCraft the default… changes the user's system
+            // File › Options › General › Make WordZ the default… changes the user's system
             // default apps (Linux) or opens system settings (Windows), so only a click on that
             // button does it ([`WordApp::make_default_app`]); scripts, the control channel and
             // MCP get an error.
             "ui.makeDefaultApp" => {
                 return Some(Err(
-                    "making WordCraft the default app needs a click in File › Options › General; scripts and agents can't change system defaults"
+                    "making WordZ the default app needs a click in File › Options › General; scripts and agents can't change system defaults"
                         .into(),
                 ));
             }
             "ui.discord" => {
-                self.canvas.open_url = Some("https://discord.gg/artcraft".into());
+                self.canvas.open_url = Some("https://github.com/danish0440/wordz/issues".into());
                 json!({})
             }
             "ui.caretAnimation" => {
@@ -1198,7 +1198,7 @@ impl WordApp {
             // Shape Format › Text › Create Link: the next click on an empty text box links the
             // selected box to it (`shape.link` with that box as the target); Esc cancels.
             "ui.linkTextBox" => {
-                let from = wordcraft_engine::cmd::objects::text_box_target(&self.session).filter(|_| widgets::enabled(self, "shape.link"));
+                let from = wordz_engine::cmd::objects::text_box_target(&self.session).filter(|_| widgets::enabled(self, "shape.link"));
                 let Some((pos, _)) = from else { return Some(Err("select a text box that isn't linked yet first".into())) };
                 self.canvas.link_from = Some(pos);
                 self.status(tl!("Click the empty text box the text should continue in (Esc cancels)"));
@@ -1213,26 +1213,26 @@ impl WordApp {
         printing::submit(self, p)
     }
 
-    /// File › Options › General › Make WordCraft the default…: hand over to the host's
+    /// File › Options › General › Make WordZ the default…: hand over to the host's
     /// [`Services::make_default_app`] and say in the status bar what happened. An error when the
     /// host has no hook (web, macOS). Only the button calls this: it is deliberately not a
     /// command, so nothing programmatic (control channel, MCP, macros) can change system defaults.
     pub(crate) fn make_default_app(&mut self) -> Result<Value, String> {
         let Some(hook) = self.services.make_default_app.as_ref() else {
-            return Err("WordCraft can't change the default apps here; use your system's settings".into());
+            return Err("WordZ can't change the default apps here; use your system's settings".into());
         };
         match hook() {
             Ok(DefaultApp::SettingsOpened) => {
-                self.status(tl!("In Default apps, choose WordCraft for the document types you want it to open."));
+                self.status(tl!("In Default apps, choose WordZ for the document types you want it to open."));
                 Ok(json!({"settingsOpened": true}))
             }
             Ok(DefaultApp::MadeDefault) => {
-                self.status(tl!("WordCraft is now the default app for Word documents."));
+                self.status(tl!("WordZ is now the default app for Word documents."));
                 Ok(json!({"default": true}))
             }
             Err(e) => {
                 log::warn!("make default app: {e}");
-                let msg = i18n::fmt(tl!("Couldn't make WordCraft the default: {error}"), &[("error", &e)]);
+                let msg = i18n::fmt(tl!("Couldn't make WordZ the default: {error}"), &[("error", &e)]);
                 self.status(msg.clone());
                 Err(msg)
             }
@@ -1245,8 +1245,8 @@ impl WordApp {
 
     /// Media key of the selected picture, if any.
     pub(crate) fn selected_picture_media(&self) -> Option<String> {
-        match wordcraft_engine::cmd::objects::selected(&self.session) {
-            Some((_, wordcraft_doc::para::InlineObject::Image { media, .. })) => Some(media),
+        match wordz_engine::cmd::objects::selected(&self.session) {
+            Some((_, wordz_doc::para::InlineObject::Image { media, .. })) => Some(media),
             _ => None,
         }
     }
@@ -1308,7 +1308,7 @@ impl WordApp {
     fn default_save_name(&self) -> String {
         let ext = self.session.path.as_ref().and_then(|p| p.extension()).map(|e| e.to_string_lossy().to_string());
         match ext {
-            Some(e) if wordcraft_engine::io::is_word_package(&e) => format!("{}.{e}", self.title_stem()),
+            Some(e) if wordz_engine::io::is_word_package(&e) => format!("{}.{e}", self.title_stem()),
             _ => format!("{}.docx", self.title_stem()),
         }
     }
@@ -1319,11 +1319,11 @@ impl WordApp {
     /// those collections are too large to add here.
     fn ensure_caption_fonts(&mut self) {
         let stem = self.title_stem();
-        if stem.chars().any(wordcraft_fonts::is_cjk) {
+        if stem.chars().any(wordz_fonts::is_cjk) {
             self.want_system_cjk = true;
         }
         let new = theme::faces_for_preedit(&stem, &self.canvas.ime_faces, theme::caption_char_covered, |c| {
-            wordcraft_fonts::FontDb::global().fallback_for(c, u32::MAX)
+            wordz_fonts::FontDb::global().fallback_for(c, u32::MAX)
         });
         if !new.is_empty() {
             self.canvas.ime_faces.extend(new);
@@ -1367,7 +1367,7 @@ impl WordApp {
     pub fn logic(&mut self, ctx: &egui::Context) {
         let lang = i18n::Lang::from_pref(&self.ui.language);
         i18n::set_current(lang);
-        // New documents are written in the interface's language when WordCraft can proof it
+        // New documents are written in the interface's language when WordZ can proof it
         // (a Polish interface: Polish spelling, grammar and hyphenation from the first word).
         if self.applied_editing != Some(lang) {
             self.session.set_editing_language(lang.editing_lang());
@@ -1455,7 +1455,7 @@ impl WordApp {
                 } else if sheet {
                     // A spreadsheet isn't a document: it's a recipient list (#334).
                     self.load_recipients(json!({"path": path}))
-                } else if wordcraft_fonts::is_font_file_name(&lp) {
+                } else if wordz_fonts::is_font_file_name(&lp) {
                     self.run("font.add", json!({"path": path}))
                 } else {
                     self.run("file.open", json!({"path": path}))
@@ -1611,9 +1611,9 @@ impl WordApp {
             ctx.open_url(egui::OpenUrl::new_tab(url));
         }
         let title = if self.has_document() {
-            format!("{}{} - WordCraft", self.title_stem(), if self.session.dirty { " •" } else { "" })
+            format!("{}{} - WordZ", self.title_stem(), if self.session.dirty { " •" } else { "" })
         } else {
-            "WordCraft".to_string()
+            "WordZ".to_string()
         };
         if title != self.sent_title {
             ctx.send_viewport_cmd(egui::ViewportCommand::Title(title.clone()));
@@ -1664,15 +1664,15 @@ impl WordApp {
             let sheet = [".xlsx", ".xlsm", ".ods"].iter().any(|e| lower.ends_with(e));
             self.recipient_list_pending = asked && !list && !sheet;
             let r = if sheet {
-                self.load_recipients(json!({"path": name, "data": wordcraft_engine::cmd::insert::base64_encode(&bytes)}))
-            } else if wordcraft_fonts::is_font_file_name(&lower) {
-                self.run("font.add", json!({"name": name, "data": wordcraft_engine::cmd::insert::base64_encode(&bytes)}))
+                self.load_recipients(json!({"path": name, "data": wordz_engine::cmd::insert::base64_encode(&bytes)}))
+            } else if wordz_fonts::is_font_file_name(&lower) {
+                self.run("font.add", json!({"name": name, "data": wordz_engine::cmd::insert::base64_encode(&bytes)}))
             } else if list {
-                self.load_recipients(json!({"csv": wordcraft_engine::io::decode_text(&bytes)}))
+                self.load_recipients(json!({"csv": wordz_engine::io::decode_text(&bytes)}))
             } else if img {
-                self.insert_or_change_picture(json!({"data": wordcraft_engine::cmd::insert::base64_encode(&bytes)}))
+                self.insert_or_change_picture(json!({"data": wordz_engine::cmd::insert::base64_encode(&bytes)}))
             } else {
-                self.run("file.open", json!({"path": name, "data": wordcraft_engine::cmd::insert::base64_encode(&bytes)}))
+                self.run("file.open", json!({"path": name, "data": wordz_engine::cmd::insert::base64_encode(&bytes)}))
             };
             if r.is_ok() {
                 self.ui.backstage = false;
@@ -1959,7 +1959,7 @@ mod tests {
     #[test]
     fn word_shortcuts_do_not_zoom_the_window() {
         let ctx = egui::Context::default();
-        let mut app = WordApp::new(Session::new(wordcraft_doc::Document::new()), Services::default());
+        let mut app = WordApp::new(Session::new(wordz_doc::Document::new()), Services::default());
         let mut frame = |events: Vec<egui::Event>| {
             let input = egui::RawInput { events, ..Default::default() };
             // No painter here: dropping the font atlas delta unapplied trips an epaint debug assertion.
@@ -2015,7 +2015,7 @@ mod tests {
         hebrew.session.path = Some("מסמך.docx".into());
         frame(&mut hebrew);
         let letter = 'מ';
-        if wordcraft_fonts::FontDb::global().fallback_for(letter, u32::MAX).is_some_and(|f| f.data().len() <= 16 << 20) {
+        if wordz_fonts::FontDb::global().fallback_for(letter, u32::MAX).is_some_and(|f| f.data().len() <= 16 << 20) {
             assert!(hebrew.canvas.ime_faces.iter().any(|f| f.covers(letter)), "the caption borrows a face that covers the file name");
         }
         let n = hebrew.canvas.ime_faces.len();
@@ -2030,7 +2030,7 @@ mod tests {
     }
 
     fn app() -> WordApp {
-        WordApp::new(Session::new(wordcraft_doc::Document::new()), Services::default())
+        WordApp::new(Session::new(wordz_doc::Document::new()), Services::default())
     }
 
     /// File › Options › Advanced › Animation: the caret's animation is a UI command, kept between
@@ -2090,7 +2090,7 @@ mod tests {
         let a = h.state_mut();
         assert!(!a.ui.backstage, "Esc leaves the Start screen");
         assert!(!a.has_document(), "for an empty window, not a blank document");
-        assert_eq!(a.sent_title, "WordCraft", "the window is titled with the app alone");
+        assert_eq!(a.sent_title, "WordZ", "the window is titled with the app alone");
         // The ribbon's commands are off, but Help, the File tab and the settings work.
         for id in ["format.bold", "text.insert", "file.save", "file.saveAs", "file.print", "edit.paste", "insert.table", "ui.print"] {
             assert!(!widgets::enabled(a, id), "{id} is off with no document");
@@ -2113,7 +2113,7 @@ mod tests {
         h.key_press(egui::Key::Enter);
         h.run_steps(2);
         let a = h.state_mut();
-        assert_eq!(a.session.doc.plain_text(wordcraft_doc::StoryRef::Body).trim(), "");
+        assert_eq!(a.session.doc.plain_text(wordz_doc::StoryRef::Body).trim(), "");
         assert!(!a.session.dirty && !a.has_document());
         assert!(a.close_requested(), "closing asks nothing");
         assert!(a.dialog.is_none());
@@ -2144,7 +2144,7 @@ mod tests {
         assert_ne!(a.session.document_id(), first);
         assert!(widgets::enabled(a, "format.bold"));
         a.run("text.insert", json!({"text": "Hello"})).unwrap();
-        assert_eq!(a.session.doc.plain_text(wordcraft_doc::StoryRef::Body).trim(), "Hello");
+        assert_eq!(a.session.doc.plain_text(wordz_doc::StoryRef::Body).trim(), "Hello");
         assert!(a.sent_title.starts_with(&a.title_stem()), "{}", a.sent_title);
     }
 
@@ -2228,7 +2228,7 @@ mod tests {
         assert!(a.dialog.is_none(), "settings apply without the dialog");
         let (tp, _, _) = a.session.sel.focus.path.cell().unwrap();
         let t = a.session.doc.table(a.session.sel.focus.story, &tp).unwrap();
-        assert_eq!(t.props.align, Some(wordcraft_doc::props::Align::Center));
+        assert_eq!(t.props.align, Some(wordz_doc::props::Align::Center));
         assert_eq!((t.rows[0].props.height, t.rows[0].props.header), (Some(36.0), true));
         assert_eq!(dialogs::TableForm::read(&a).unwrap().changes(&f), json!({}), "the dialog reopens with the new values");
         // Table direction (#362) is one more setting of the same step.
@@ -2284,7 +2284,7 @@ mod tests {
         frame(&mut a, vec![egui::Event::Text("abc".into())]);
         let Some(dialogs::Dialog::Find { query, .. }) = &a.dialog else { panic!("no Find dialog") };
         assert!(query.ends_with("abc"), "typing went into Find what: {query:?}");
-        assert!(a.session.doc.plain_text(wordcraft_doc::StoryRef::Body).is_empty(), "nothing was typed into the document");
+        assert!(a.session.doc.plain_text(wordz_doc::StoryRef::Body).is_empty(), "nothing was typed into the document");
     }
 
     /// Issue #139: Ctrl+wheel over the page didn't zoom.
@@ -2421,7 +2421,7 @@ mod tests {
         let ctx = egui::Context::default();
         let mut a = app();
         a.run("text.insert", json!({"text": "One readable paragraph in many narrow columns. ".repeat(300)})).unwrap();
-        a.run("caret.set", json!({"pos": wordcraft_doc::Pos::body(0, 0)})).unwrap();
+        a.run("caret.set", json!({"pos": wordz_doc::Pos::body(0, 0)})).unwrap();
         let original = a.session.doc.settings.clone();
         let screen = egui::Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(1280.0, 740.0));
         let mut t = 0.0;
@@ -2465,10 +2465,10 @@ mod tests {
         assert!((a.canvas.scroll_offset.x - initial_scroll).abs() < 0.5);
         assert!(a.session.sel.is_collapsed());
         // An explicit caret move outside the visible columns must still reveal its destination.
-        a.run("caret.set", json!({"pos": wordcraft_doc::Pos::body(0, 5000)})).unwrap();
+        a.run("caret.set", json!({"pos": wordz_doc::Pos::body(0, 5000)})).unwrap();
         frame(&mut a, vec![], screen);
         assert!(a.canvas.scroll_offset.x > initial_scroll + a.session.view.read_width * a.canvas.scale);
-        a.run("caret.set", json!({"pos": wordcraft_doc::Pos::body(0, 0)})).unwrap();
+        a.run("caret.set", json!({"pos": wordz_doc::Pos::body(0, 0)})).unwrap();
         frame(&mut a, vec![], screen);
         assert!((a.canvas.scroll_offset.x - initial_scroll).abs() < 0.5);
         let over = a.canvas.canvas_rect.unwrap().center();
@@ -2501,7 +2501,7 @@ mod tests {
         let x = a.canvas.scroll_offset.x;
         // A heading navigation request must position its column at the leading edge,
         // not wherever egui's generic scroll_to_rect decides the caret is visible.
-        let target = wordcraft_doc::Pos::body(0, 5000);
+        let target = wordz_doc::Pos::body(0, 5000);
         a.run("view.navigationPane", json!({"value": true})).unwrap();
         a.run("caret.set", json!({"pos": target})).unwrap();
         a.canvas.nav_to_caret = true;
@@ -2542,7 +2542,7 @@ mod tests {
         a.run("view.printLayout", json!({})).unwrap();
         frame(&mut a, vec![], narrow);
         assert!(!a.session.view.read_mode);
-        assert_eq!(a.session.view.mode, wordcraft_layout::ViewMode::Print);
+        assert_eq!(a.session.view.mode, wordz_layout::ViewMode::Print);
         assert_eq!(a.session.doc.settings, original);
     }
 
@@ -2550,7 +2550,7 @@ mod tests {
     fn app_with_system_animations(system: &std::rc::Rc<std::cell::Cell<Option<bool>>>) -> WordApp {
         let system = system.clone();
         let services = Services { animations_enabled: Some(Box::new(move || system.get())), ..Default::default() };
-        WordApp::new(Session::new(wordcraft_doc::Document::new()), services)
+        WordApp::new(Session::new(wordz_doc::Document::new()), services)
     }
 
     /// Animation effects: "Use system setting" (the default) follows what the host reports and is
@@ -2909,7 +2909,7 @@ mod tests {
     }
 
     fn body_text(a: &WordApp) -> String {
-        a.session.doc.plain_text(wordcraft_doc::StoryRef::Body)
+        a.session.doc.plain_text(wordz_doc::StoryRef::Body)
     }
 
     fn prompt(a: &WordApp) -> Option<&'static str> {
@@ -2918,7 +2918,7 @@ mod tests {
 
     /// A fresh scratch folder for one test.
     fn scratch(name: &str) -> std::path::PathBuf {
-        let dir = std::env::temp_dir().join(format!("wordcraft-ui-{name}-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("wordz-ui-{name}-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         dir
@@ -2927,7 +2927,7 @@ mod tests {
     /// A .docx on disk that the app didn't write.
     fn docx_on_disk(dir: &std::path::Path, text: &str) -> std::path::PathBuf {
         let path = dir.join("contract.docx");
-        let mut s = Session::new(wordcraft_doc::Document::from_text(text));
+        let mut s = Session::new(wordz_doc::Document::from_text(text));
         s.run("file.save", &json!({"path": path.to_string_lossy()})).unwrap();
         path
     }
@@ -2969,7 +2969,7 @@ mod tests {
     fn password_protected_documents_ask_for_the_password() {
         let dir = scratch("password");
         let path = dir.join("locked.docx");
-        let mut s = Session::new(wordcraft_doc::Document::from_text("Locked away"));
+        let mut s = Session::new(wordz_doc::Document::from_text("Locked away"));
         s.run("file.save", &json!({"path": path.to_string_lossy(), "password": "sesame"})).unwrap();
 
         let mut a = typed();
@@ -3182,7 +3182,7 @@ mod tests {
         assert!(a.status_msg.as_ref().is_some_and(|(m, _)| m.contains("blocked by the browser")), "the status bar says why");
     }
 
-    /// Make WordCraft the default… (#295) goes through the host's hook and reports the outcome in
+    /// Make WordZ the default… (#295) goes through the host's hook and reports the outcome in
     /// the status bar; without a hook (web, macOS) it's an error and nothing runs.
     #[test]
     fn make_default_app_needs_the_hosts_hook_and_reports_the_outcome() {
@@ -3285,12 +3285,12 @@ mod tests {
         }
     }
 
-    /// File › Options shows Make WordCraft the default… only when the host can do it (#295), and
+    /// File › Options shows Make WordZ the default… only when the host can do it (#295), and
     /// the button runs the host's hook.
     #[test]
     fn the_default_app_button_shows_only_with_the_hosts_hook() {
         use egui_kittest::kittest::Queryable;
-        const LABEL: &str = "Make WordCraft the default for Word documents…";
+        const LABEL: &str = "Make WordZ the default for Word documents…";
         for hook in [false, true] {
             let calls = std::rc::Rc::new(std::cell::Cell::new(0));
             let mut a = app();
@@ -3379,7 +3379,7 @@ mod tests {
 
     #[test]
     fn paragraph_alignment_keeps_the_canvas_focused_for_typing() {
-        use wordcraft_doc::Align;
+        use wordz_doc::Align;
 
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
             |ui, app: &mut WordApp| {
@@ -3474,10 +3474,10 @@ mod tests {
         // The status bar's view buttons.
         h.get_by_role_and_label(Role::Button, "Web Layout").click();
         type_after_click(&mut h, "Web Layout", " web");
-        assert_eq!(h.state().session.view.mode, wordcraft_layout::ViewMode::Web);
+        assert_eq!(h.state().session.view.mode, wordz_layout::ViewMode::Web);
         h.get_by_role_and_label(Role::Button, "Print Layout").click();
         type_after_click(&mut h, "Print Layout", " print");
-        assert_eq!(h.state().session.view.mode, wordcraft_layout::ViewMode::Print);
+        assert_eq!(h.state().session.view.mode, wordz_layout::ViewMode::Print);
 
         // The language item opens its menu; a click elsewhere on the status bar cancels it.
         let lang_label = crate::ribbon::caret_language(h.state());
@@ -3543,13 +3543,13 @@ mod tests {
         h.event(key(egui::Key::Num1, egui::Modifiers::COMMAND | egui::Modifiers::ALT));
         h.step();
         let style =
-            |h: &egui_kittest::Harness<WordApp>| h.state().session.doc.para_at(&wordcraft_doc::Pos::body(0, 0)).and_then(|p| p.props.style.clone());
+            |h: &egui_kittest::Harness<WordApp>| h.state().session.doc.para_at(&wordz_doc::Pos::body(0, 0)).and_then(|p| p.props.style.clone());
         assert_eq!(style(&h).as_deref(), Some("Heading1"));
         // Alt+F7 (next misspelling) can come with key text on some platforms; none is typed.
         h.event(key(egui::Key::F7, egui::Modifiers::ALT));
         h.event(egui::Event::Text("x".into()));
         h.step();
-        assert_eq!(h.state().session.doc.plain_text(wordcraft_doc::StoryRef::Body), "Kilns");
+        assert_eq!(h.state().session.doc.plain_text(wordz_doc::StoryRef::Body), "Kilns");
     }
 
     /// #819: Alt+Q opens Search with its box focused, as in Word: the Q isn't typed into the
@@ -3588,7 +3588,7 @@ mod tests {
         h.event(egui::Event::Text("bold".into()));
         h.step();
         assert_eq!(query(&h).as_deref(), Some("bold"), "typing goes into the search box");
-        assert_eq!(h.state().session.doc.plain_text(wordcraft_doc::StoryRef::Body), "Kilns");
+        assert_eq!(h.state().session.doc.plain_text(wordz_doc::StoryRef::Body), "Kilns");
         h.event(key(egui::Key::Escape, egui::Modifiers::NONE));
         h.step();
         h.step();
@@ -3641,8 +3641,8 @@ mod tests {
         a.run("ui.saveChanges", json!({"answer": "save"})).unwrap();
         assert_eq!(prompt(&a), None);
         assert_eq!(a.session.path, None, "the new document replaced the saved one");
-        let saved = wordcraft_engine::io::open_path(&path).unwrap();
-        assert!(saved.plain_text(wordcraft_doc::StoryRef::Body).contains("Revised Draft"));
+        let saved = wordz_engine::io::open_path(&path).unwrap();
+        assert!(saved.plain_text(wordz_doc::StoryRef::Body).contains("Revised Draft"));
         let _ = std::fs::remove_dir_all(&dir);
     }
 
@@ -3699,8 +3699,8 @@ mod tests {
             a.run("text.insert", json!({"text": "More "})).unwrap();
             a.autosave_tick(now_ms() + 10_000.0);
             assert!(!a.session.dirty, "{ext}: AutoSave wrote the file");
-            let saved = wordcraft_engine::io::open_path(&path).unwrap();
-            assert!(saved.plain_text(wordcraft_doc::StoryRef::Body).contains("More "), "{ext}");
+            let saved = wordz_engine::io::open_path(&path).unwrap();
+            assert!(saved.plain_text(wordz_doc::StoryRef::Body).contains("More "), "{ext}");
             let _ = std::fs::remove_dir_all(&dir);
         }
     }
@@ -3746,8 +3746,8 @@ mod tests {
         a.run("file.close", json!({})).unwrap();
         a.run("ui.saveChanges", json!({"answer": "save"})).unwrap();
         assert!(a.quit_requested);
-        let saved = wordcraft_engine::io::open_path(&path).unwrap();
-        assert!(saved.plain_text(wordcraft_doc::StoryRef::Body).contains(UNSAVED));
+        let saved = wordz_engine::io::open_path(&path).unwrap();
+        assert!(saved.plain_text(wordz_doc::StoryRef::Body).contains(UNSAVED));
         let _ = std::fs::remove_dir_all(&dir);
     }
 
@@ -3848,7 +3848,7 @@ mod tests {
             assert_eq!(prompt(&a), None);
             let saved = std::fs::read(&path).unwrap();
             assert!(
-                wordcraft_engine::io::open_path(&path).unwrap().plain_text(wordcraft_doc::StoryRef::Body).contains("Revised Again Signed"),
+                wordz_engine::io::open_path(&path).unwrap().plain_text(wordz_doc::StoryRef::Body).contains("Revised Again Signed"),
                 "{id}: Save wrote the document first"
             );
 
@@ -3914,7 +3914,7 @@ mod tests {
             let dir = scratch(&format!("mailings-redo-{}", id.len()));
             let path = docx_on_disk(&dir, "Signed contract");
             let copy = dir.join("copy.docx");
-            let on_file = |p: &std::path::Path| wordcraft_engine::io::open_path(p).unwrap().plain_text(wordcraft_doc::StoryRef::Body);
+            let on_file = |p: &std::path::Path| wordz_engine::io::open_path(p).unwrap().plain_text(wordz_doc::StoryRef::Body);
             let mut a = app();
             a.run("file.open", json!({"path": path.to_string_lossy()})).unwrap();
             a.run("mailings.recipients", json!({"csv": "Name\nAda"})).unwrap();
@@ -3957,8 +3957,8 @@ mod tests {
         assert!(a.session.dirty);
         a.autosave_tick(now_ms() + 10_000.0);
         assert!(!a.session.dirty);
-        let saved = wordcraft_engine::io::open_path(&path).unwrap();
-        assert!(saved.plain_text(wordcraft_doc::StoryRef::Body).contains("Typed More Original"));
+        let saved = wordz_engine::io::open_path(&path).unwrap();
+        assert!(saved.plain_text(wordz_doc::StoryRef::Body).contains("Typed More Original"));
         let _ = std::fs::remove_dir_all(&dir);
     }
 
@@ -4003,7 +4003,7 @@ mod tests {
     #[test]
     fn autosave_is_unavailable_in_the_browser() {
         let services = Services { download: Some(Box::new(|_: &str, _: &[u8]| Ok(()))), ..Default::default() };
-        let mut a = WordApp::new(Session::new(wordcraft_doc::Document::new()), services);
+        let mut a = WordApp::new(Session::new(wordz_doc::Document::new()), services);
         a.run("text.insert", json!({"text": "Hello"})).unwrap();
         a.run("file.save", json!({"path": "draft.docx"})).unwrap();
         assert_eq!(a.autosave_block(), Some(AutoSaveBlock::Browser));
@@ -4027,8 +4027,8 @@ mod tests {
         a.run("text.insert", json!({"text": " continues"})).unwrap();
         a.autosave_tick(now_ms() + 10_000.0);
         assert!(!a.session.dirty);
-        let saved = wordcraft_engine::io::open_path(&path).unwrap();
-        assert!(saved.plain_text(wordcraft_doc::StoryRef::Body).contains("chapter continues"));
+        let saved = wordz_engine::io::open_path(&path).unwrap();
+        assert!(saved.plain_text(wordz_doc::StoryRef::Body).contains("chapter continues"));
         let _ = std::fs::remove_dir_all(&dir);
     }
 
@@ -4059,12 +4059,12 @@ mod tests {
     /// Web Save of an opened .docm downloads a .docm, so its macros stay (Codex review, docm lane).
     #[test]
     fn web_save_keeps_the_opened_word_format() {
-        let mut doc = wordcraft_doc::Document::new();
+        let mut doc = wordz_doc::Document::new();
         doc.passthrough.insert("word/vbaProject.bin".into(), std::sync::Arc::new(vec![0xD0, 0xCF, 0x11, 0xE0, 1, 2, 3]));
         doc.passthrough.insert("word/vbaData.xml".into(), std::sync::Arc::new(b"<wne:vbaSuppData/>".to_vec()));
-        // The docx reader's list of parts the project relates to (wordcraft_docx VBA_RELATED).
+        // The docx reader's list of parts the project relates to (wordz_docx VBA_RELATED).
         let related = "http://schemas.microsoft.com/office/2006/relationships/wordVbaData\tword/vbaData.xml\tapplication/vnd.ms-word.vbaData+xml\n";
-        doc.passthrough.insert("wordcraft:vbaProject.related".into(), std::sync::Arc::new(related.as_bytes().to_vec()));
+        doc.passthrough.insert("wordz:vbaProject.related".into(), std::sync::Arc::new(related.as_bytes().to_vec()));
         let got: std::rc::Rc<std::cell::RefCell<Vec<(String, Vec<u8>)>>> = Default::default();
         let sink = got.clone();
         let services = Services {
@@ -4082,7 +4082,7 @@ mod tests {
             a.run("file.save", json!({})).unwrap();
             let (name, bytes) = got.borrow_mut().pop().unwrap();
             assert_eq!(name, expect);
-            let back = wordcraft_engine::io::open_bytes(&name, &bytes).unwrap();
+            let back = wordz_engine::io::open_bytes(&name, &bytes).unwrap();
             let macros = name.to_ascii_lowercase().ends_with('m');
             for part in ["word/vbaProject.bin", "word/vbaData.xml"] {
                 assert_eq!(back.passthrough.contains_key(part), macros, "{opened}: {part}");
@@ -4093,7 +4093,7 @@ mod tests {
         a.run("file.saveAs", json!({"path": "m.docx"})).unwrap();
         let (name, bytes) = got.borrow_mut().pop().unwrap();
         assert_eq!(name, "m.docx");
-        assert!(!wordcraft_engine::io::open_bytes(&name, &bytes).unwrap().passthrough.contains_key("word/vbaProject.bin"));
+        assert!(!wordz_engine::io::open_bytes(&name, &bytes).unwrap().passthrough.contains_key("word/vbaProject.bin"));
     }
 
     #[test]
@@ -4370,7 +4370,7 @@ mod tests {
     }
 
     fn insert_picture(a: &mut WordApp, c: [u8; 4]) {
-        let data = wordcraft_engine::cmd::insert::base64_encode(&png_bytes(c));
+        let data = wordz_engine::cmd::insert::base64_encode(&png_bytes(c));
         a.session.run("insert.picture", &json!({"data": data})).unwrap();
     }
 
@@ -4500,11 +4500,11 @@ mod tests {
         a.run("mailings.rules", params).unwrap();
         assert!(a.dialog.is_none());
         let fields = |a: &WordApp| -> Vec<String> {
-            let (doc, body) = (&a.session.doc, wordcraft_doc::StoryRef::Body);
+            let (doc, body) = (&a.session.doc, wordz_doc::StoryRef::Body);
             let paras = doc.para_paths(body).into_iter().filter_map(|p| doc.para(body, &p).cloned());
             paras
                 .flat_map(|p| p.objects)
-                .filter_map(|o| if let wordcraft_doc::para::InlineObject::Field { instr, .. } = o { Some(instr) } else { None })
+                .filter_map(|o| if let wordz_doc::para::InlineObject::Field { instr, .. } = o { Some(instr) } else { None })
                 .collect()
         };
         assert_eq!(fields(&a), vec![r#"IF { MERGEFIELD City } = "London" "Local" "Away""#]);
@@ -4680,7 +4680,7 @@ mod tests {
         let control::Outcome::Done(v) = control::handle(&mut a, &ctx, &req) else { panic!("ui.render replies at once") };
         assert_eq!(v["ok"], true, "{v}");
         assert!(v["result"].get("path").is_none(), "no file: {v}");
-        let png = wordcraft_engine::cmd::insert::base64_decode(v["result"]["png"].as_str().expect("png")).expect("base64");
+        let png = wordz_engine::cmd::insert::base64_decode(v["result"]["png"].as_str().expect("png")).expect("base64");
         assert_eq!(&png[..4], b"\x89PNG", "{v}");
         assert!(v["result"]["width"].as_u64().unwrap() > 0 && v["result"]["pages"].as_u64().unwrap() >= 1, "{v}");
 
@@ -4688,7 +4688,7 @@ mod tests {
         let v = control::save_screenshot(&image, None);
         assert_eq!(v["ok"], true, "{v}");
         assert!(v["result"].get("path").is_none(), "no file: {v}");
-        let png = wordcraft_engine::cmd::insert::base64_decode(v["result"]["png"].as_str().expect("png")).expect("base64");
+        let png = wordz_engine::cmd::insert::base64_decode(v["result"]["png"].as_str().expect("png")).expect("base64");
         assert_eq!(&png[..4], b"\x89PNG");
         assert_eq!(v["result"]["width"], 2, "{v}");
         assert_eq!(v["result"]["height"], 1, "{v}");
@@ -4734,7 +4734,7 @@ mod tests {
         h.step();
         h.step();
         assert!(h.state().canvas.context_menu_open);
-        assert_eq!(h.state().session.doc.plain_text(wordcraft_doc::StoryRef::Body), "Kilns fire");
+        assert_eq!(h.state().session.doc.plain_text(wordz_doc::StoryRef::Body), "Kilns fire");
     }
 
     /// #712: Find, Replace and Go To open as in Word. Ctrl+F puts the keyboard in the Navigation
@@ -4769,7 +4769,7 @@ mod tests {
         h.step();
         assert_eq!(nav_query(&h), "cool", "typed into the pane's search box");
         assert_eq!(h.state().session.find.results.len(), 1);
-        assert_eq!(h.state().session.doc.plain_text(wordcraft_doc::StoryRef::Body), "Kilns fire clay. Kilns cool.");
+        assert_eq!(h.state().session.doc.plain_text(wordz_doc::StoryRef::Body), "Kilns fire clay. Kilns cool.");
         // With text selected, Ctrl+F searches for it.
         h.state_mut().run("select.text", json!({"text": "Kilns"})).unwrap();
         h.state_mut().canvas.want_focus = true;

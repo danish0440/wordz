@@ -5,7 +5,7 @@
 use egui::{Rect, Sense, Stroke, Ui, pos2, vec2};
 use serde::Serialize;
 use serde_json::{Value, json};
-use wordcraft_doc::props::{Border, BorderStyle, Borders, Rgb, TabAlign, TabLeader, TabStop};
+use wordz_doc::props::{Border, BorderStyle, Borders, Rgb, TabAlign, TabLeader, TabStop};
 
 use crate::WordApp;
 use crate::dialogs::{buttons, color_menu};
@@ -15,7 +15,7 @@ use crate::theme::{Tokens, semibold};
 /// Stops closer than this (points) are the same stop.
 const SAME_POS: f32 = 0.5;
 
-fn unit() -> wordcraft_geom::Unit {
+fn unit() -> wordz_geom::Unit {
     crate::options::unit()
 }
 
@@ -365,7 +365,7 @@ impl BordersForm {
     pub fn read(app: &WordApp, tab: u8) -> Option<BordersForm> {
         let s = &app.session;
         let rp = s.doc.para_at(&s.sel.focus).map(|p| s.doc.styles.resolve_para(&p.props))?;
-        let sect = wordcraft_engine::cmd::page::sect(s);
+        let sect = wordz_engine::cmd::page::sect(s);
         let mut f = BordersForm {
             tab: tab.min(2),
             para: LineForm::read(rp.borders.as_ref()),
@@ -643,10 +643,10 @@ fn draw_line(p: &egui::Painter, [a, b]: [egui::Pos2; 2], style: BorderStyle, wid
 mod tests {
     use super::*;
     use crate::dialogs::Dialog;
-    use wordcraft_engine::Session;
+    use wordz_engine::Session;
 
     fn app_with(text: &str) -> WordApp {
-        let mut app = WordApp::new(Session::new(wordcraft_doc::Document::new()), crate::Services::default());
+        let mut app = WordApp::new(Session::new(wordz_doc::Document::new()), crate::Services::default());
         let _ = app.run("document.setText", json!({"text": text}));
         app
     }

@@ -15,12 +15,12 @@ use std::sync::Arc;
 
 use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::{Value, json};
-use wordcraft_doc::freeform::{FreePath, Freeform, InkTool, MAX_INK_PER_PAGE, MAX_POINTS};
-use wordcraft_doc::para::{Anchor, Float, InlineObject, OBJ, ShapeKind, Wrap};
-use wordcraft_doc::props::Rgb;
-use wordcraft_doc::{CharProps, Pos, StoryRef};
-use wordcraft_geom::Rect;
-use wordcraft_layout::{DocLayout, Placed};
+use wordz_doc::freeform::{FreePath, Freeform, InkTool, MAX_INK_PER_PAGE, MAX_POINTS};
+use wordz_doc::para::{Anchor, Float, InlineObject, OBJ, ShapeKind, Wrap};
+use wordz_doc::props::Rgb;
+use wordz_doc::{CharProps, Pos, StoryRef};
+use wordz_geom::Rect;
+use wordz_layout::{DocLayout, Placed};
 
 use super::ink_shape::{InkShape, recognise};
 use super::pos_json;
@@ -302,7 +302,7 @@ pub struct PlacedInk {
     /// Its unturned frame on the page.
     pub rect: Rect,
     /// Its turn about the frame's centre.
-    pub spin: wordcraft_geom::Spin,
+    pub spin: wordz_geom::Spin,
     pub freeform: Arc<Freeform>,
     pub color: Option<Rgb>,
     pub width: f32,
@@ -486,7 +486,7 @@ fn place(s: &mut Session, layout: &DocLayout, obj: InlineObject, page: usize, (x
         }
     }
     let (rel, origin) = if on_page {
-        (Anchor::Page, wordcraft_geom::Point::new(0.0, 0.0))
+        (Anchor::Page, wordz_geom::Point::new(0.0, 0.0))
     } else {
         s.touch(); // lay out the new object to find where its paragraph puts it
         let origin = s.layout().object(&at, page).ok_or_else(|| CmdError::Failed("the stroke isn't laid out".into()))?.origin;
@@ -765,14 +765,14 @@ fn replay(s: &mut Session, v: &Value) -> CmdResult {
 #[cfg(test)]
 mod tests {
     use serde_json::json;
-    use wordcraft_doc::StoryRef;
-    use wordcraft_doc::freeform::InkTool;
-    use wordcraft_doc::para::{InlineObject, ShapeKind, Wrap};
+    use wordz_doc::StoryRef;
+    use wordz_doc::freeform::InkTool;
+    use wordz_doc::para::{InlineObject, ShapeKind, Wrap};
 
     use crate::Session;
 
     fn session() -> Session {
-        let mut s = Session::new(wordcraft_doc::Document::new());
+        let mut s = Session::new(wordz_doc::Document::new());
         s.run("document.setText", &json!({"text": "First paragraph of text.\nSecond paragraph of text."})).unwrap();
         s
     }
@@ -792,11 +792,11 @@ mod tests {
         assert_eq!((x, y), (99.0, 89.0), "the points' bounds, grown by half the width");
         let objs = ink(&s);
         let [InlineObject::Shape { stroke, stroke_width, float, freeform: Some(f), .. }] = objs.as_slice() else { panic!("one stroke: {objs:?}") };
-        assert_eq!((*stroke, *stroke_width, float.wrap), (Some(wordcraft_doc::Rgb(0xC0, 0, 0)), 2.0, Wrap::InFrontOfText));
+        assert_eq!((*stroke, *stroke_width, float.wrap), (Some(wordz_doc::Rgb(0xC0, 0, 0)), 2.0, Wrap::InFrontOfText));
         assert_eq!(f.ink, Some(InkTool::Pen));
         assert_eq!(f.paths[0].pts, vec![[1.0, 1.0], [51.0, 31.0], [101.0, 6.0]], "NaN dropped, shape-local");
         // Laid out where it was drawn.
-        let at = wordcraft_doc::Pos { story: StoryRef::Body, path: wordcraft_doc::Path::top(0), off: 0 };
+        let at = wordz_doc::Pos { story: StoryRef::Body, path: wordz_doc::Path::top(0), off: 0 };
         let hit = s.layout().object(&at, 0).unwrap();
         assert!((hit.rect.x - 99.0).abs() < 0.01 && (hit.rect.y - 89.0).abs() < 0.01, "{:?}", hit.rect);
         s.run("edit.undo", &json!({})).unwrap();
@@ -807,7 +807,7 @@ mod tests {
         s.run("draw.stroke", &json!({"page": 0, "points": [[80, 80]]})).unwrap();
         let objs = ink(&s);
         let [InlineObject::Shape { float, freeform: Some(f), stroke, .. }] = objs.as_slice() else { panic!() };
-        assert_eq!((float.wrap, f.ink, *stroke), (Wrap::BehindText, Some(InkTool::Highlighter), Some(wordcraft_doc::Rgb(0, 0xFF, 0))));
+        assert_eq!((float.wrap, f.ink, *stroke), (Wrap::BehindText, Some(InkTool::Highlighter), Some(wordz_doc::Rgb(0, 0xFF, 0))));
         assert!(f.alpha < 1.0);
         // Hostile input is refused, not drawn.
         assert!(s.run("draw.stroke", &json!({"page": 99, "points": [[1, 1]]})).is_err());
@@ -951,10 +951,10 @@ mod tests {
         let r = s.run("draw.stroke", &json!({"page": 0, "points": rect_stroke(100.0, 100.0, 120.0, 60.0), "color": "C00000", "width": 2})).unwrap();
         assert_eq!(r["shape"], "rectangle");
         assert_eq!(s.undo_depth(), steps + 1, "drawn and converted in one undo step");
-        let at: wordcraft_doc::Pos = serde_json::from_value(r["pos"].clone()).unwrap();
+        let at: wordz_doc::Pos = serde_json::from_value(r["pos"].clone()).unwrap();
         let obj = s.doc.para_at(&at).and_then(|p| p.object_at(at.off)).cloned().unwrap();
         let InlineObject::Shape { kind, w, h, stroke, stroke_width, freeform, .. } = obj else { panic!("{obj:?}") };
-        assert_eq!((kind, stroke, stroke_width, freeform.is_none()), (ShapeKind::Rectangle, Some(wordcraft_doc::Rgb(0xC0, 0, 0)), 2.0, true));
+        assert_eq!((kind, stroke, stroke_width, freeform.is_none()), (ShapeKind::Rectangle, Some(wordz_doc::Rgb(0xC0, 0, 0)), 2.0, true));
         assert!((w - 120.0).abs() < 2.0 && (h - 60.0).abs() < 2.0, "{w} x {h}");
         let rect = s.layout().object(&at, 0).unwrap().rect;
         assert!((rect.x - 100.0).abs() < 2.0 && (rect.y - 100.0).abs() < 2.0, "where it was drawn: {rect:?}");

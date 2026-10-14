@@ -1,24 +1,24 @@
 [package]
-name = "wordcraft-engine"
+name = "wordz-engine"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "WordCraft engine: session, selection, undo, the command registry (every action is a command), Word's command catalog, file I/O dispatch"
+description = "WordZ engine: session, selection, undo, the command registry (every action is a command), Word's command catalog, file I/O dispatch"
 
 [lints]
 workspace = true
 
 [dependencies]
-wordcraft-geom = { workspace = true }
-wordcraft-doc = { workspace = true }
-wordcraft-fonts = { workspace = true }
-wordcraft-layout = { workspace = true }
-wordcraft-render = { workspace = true }
-wordcraft-proof = { workspace = true }
-wordcraft-docx = { workspace = true }
-wordcraft-docbin = { workspace = true }
-wordcraft-pdf = { workspace = true }
-wordcraft-formats = { workspace = true }
+wordz-geom = { workspace = true }
+wordz-doc = { workspace = true }
+wordz-fonts = { workspace = true }
+wordz-layout = { workspace = true }
+wordz-render = { workspace = true }
+wordz-proof = { workspace = true }
+wordz-docx = { workspace = true }
+wordz-docbin = { workspace = true }
+wordz-pdf = { workspace = true }
+wordz-formats = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }

@@ -8,9 +8,9 @@ use std::hash::{Hash, Hasher};
 
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
-use wordcraft_doc::{Block, Document, Pos, StoryRef};
-use wordcraft_layout::ViewMode;
-use wordcraft_layout::outline::{self as ol, BODY, OutlineView};
+use wordz_doc::{Block, Document, Pos, StoryRef};
+use wordz_layout::ViewMode;
+use wordz_layout::outline::{self as ol, BODY, OutlineView};
 
 use super::sel_result;
 use crate::{CmdError, CmdResult, CommandSpec, Selection, Session, p};

@@ -1,4 +1,4 @@
-//! WordCraft import/export for the "other" text formats: plain text, Markdown (CommonMark subset
+//! WordZ import/export for the "other" text formats: plain text, Markdown (CommonMark subset
 //! plus GFM tables and strikethrough), HTML, RTF, OpenDocument Text and LaTeX — and, read-only,
 //! spreadsheet cells for mail-merge recipient lists ([`sheet`]: .xlsx/.xlsm/.ods).
 //!
@@ -20,7 +20,7 @@ pub mod rtf;
 pub mod sheet;
 pub mod txt;
 
-use wordcraft_doc::Document;
+use wordz_doc::Document;
 
 /// Extensions this crate handles.
 pub const EXTENSIONS: &[&str] = &["txt", "text", "md", "markdown", "html", "htm", "xhtml", "rtf", "odt", "tex", "latex", "ltx"];

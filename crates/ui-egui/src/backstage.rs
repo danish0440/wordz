@@ -169,13 +169,13 @@ fn template_tile(ui: &mut Ui, app: &mut WordApp, label: &str, template: &str) {
         let key = format!("tpl:{template}:{ppp}");
         let region = app.session.region();
         let tex = ui.ctx().data(|d| d.get_temp::<egui::TextureHandle>(egui::Id::new(&key))).or_else(|| {
-            let mut s = wordcraft_engine::Session::new(wordcraft_doc::Document::new());
+            let mut s = wordz_engine::Session::new(wordz_doc::Document::new());
             // The blank tile shows the region's paper (#838).
             s.system_region = region;
             let _ = s.run("file.new", &json!({"template": template}));
             let l = s.export_layout();
             let page = l.pages.first()?;
-            let img = wordcraft_render::render_page(&s.doc, page, 150.0 / page.w * ppp, &crate::canvas::screen_render_options());
+            let img = wordz_render::render_page(&s.doc, page, 150.0 / page.w * ppp, &crate::canvas::screen_render_options());
             let px = img.to_straight();
             let h = ui.ctx().load_texture(
                 &key,
@@ -218,7 +218,7 @@ fn matching_templates(query: &str) -> Vec<(&'static str, &'static str)> {
 /// Home: a greeting, Blank plus a short row of templates with a link to New, then Recent.
 fn home_page(app: &mut WordApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
-    let hour = wordcraft_engine::cmd::now_iso().get(11..13).and_then(|h| h.parse::<u32>().ok()).unwrap_or(9);
+    let hour = wordz_engine::cmd::now_iso().get(11..13).and_then(|h| h.parse::<u32>().ok()).unwrap_or(9);
     heading(
         ui,
         if hour < 12 {
@@ -298,11 +298,11 @@ fn open_page(app: &mut WordApp, ui: &mut Ui) {
         let _ = app.run("ui.openFileDialog", json!({}));
     }
     // Linux and the BSDs (#576): the system dialog needs a file chooser portal or zenity; when it
-    // doesn't show up, WordCraft's own browser is always one click away.
+    // doesn't show up, WordZ's own browser is always one click away.
     #[cfg(all(unix, not(target_os = "macos"), not(target_arch = "wasm32")))]
     if ui
-        .button(egui::RichText::new(tl!("Browse in WordCraft…")).font(medium(14.0)))
-        .on_hover_text(tl!("Open a file with WordCraft's own browser when the system file dialog doesn't appear."))
+        .button(egui::RichText::new(tl!("Browse in WordZ…")).font(medium(14.0)))
+        .on_hover_text(tl!("Open a file with WordZ's own browser when the system file dialog doesn't appear."))
         .clicked()
     {
         let _ = app.run("ui.fileBrowser", json!({}));
@@ -430,7 +430,7 @@ mod tests {
     /// and Recent; New has every template and no Recent list.
     #[test]
     fn home_and_new_show_different_sections() {
-        let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), Services::default());
+        let mut a = WordApp::new(wordz_engine::Session::new(wordz_doc::Document::new()), Services::default());
         a.run("ui.backstage", json!({"value": true, "page": "home"})).unwrap();
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
             |ui, app: &mut WordApp| {
@@ -467,7 +467,7 @@ mod tests {
             })),
             ..Default::default()
         };
-        let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::from_text("XYZ")), services);
+        let mut a = WordApp::new(wordz_engine::Session::new(wordz_doc::Document::from_text("XYZ")), services);
         a.session.author = "GAMMA".into();
         a.run("ui.backstage", json!({"value": true, "page": "info"})).unwrap();
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
@@ -498,7 +498,7 @@ mod tests {
         a.run("file.save", json!({})).unwrap();
         a.run("file.save", json!({})).unwrap();
         let (name, bytes) = got.borrow_mut().pop().unwrap();
-        let back = wordcraft_engine::io::open_bytes(&name, &bytes).unwrap();
+        let back = wordz_engine::io::open_bytes(&name, &bytes).unwrap();
         assert_eq!((back.core.title.as_str(), back.core.creator.as_str()), ("ALPHA", "BETA"));
         assert_eq!(back.core.last_modified_by, "GAMMA");
         assert_eq!(back.core.revision, core.revision + 2, "each save advances the revision");
@@ -515,7 +515,7 @@ mod tests {
 
     #[test]
     fn save_as_page_shows_browse_and_no_open_list() {
-        let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), Services::default());
+        let mut a = WordApp::new(wordz_engine::Session::new(wordz_doc::Document::new()), Services::default());
         a.run("ui.backstage", json!({"value": true, "page": "saveAs"})).unwrap();
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
             |ui, app: &mut WordApp| {
@@ -532,7 +532,7 @@ mod tests {
 
     #[test]
     fn backstage_save_navigates_to_save_as_when_unnamed() {
-        let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), Services::default());
+        let mut a = WordApp::new(wordz_engine::Session::new(wordz_doc::Document::new()), Services::default());
         a.run("ui.backstage", json!({"value": true, "page": "home"})).unwrap();
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
             |ui, app: &mut WordApp| {
@@ -561,7 +561,7 @@ mod tests {
             })),
             ..Default::default()
         };
-        let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), services);
+        let mut a = WordApp::new(wordz_engine::Session::new(wordz_doc::Document::new()), services);
         a.run("ui.backstage", json!({"value": true, "page": "home"})).unwrap();
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
             |ui, app: &mut WordApp| {
@@ -590,7 +590,7 @@ mod tests {
             })),
             ..Default::default()
         };
-        let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), services);
+        let mut a = WordApp::new(wordz_engine::Session::new(wordz_doc::Document::new()), services);
         a.run("ui.backstage", json!({"value": true, "page": "home"})).unwrap();
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
             |ui, app: &mut WordApp| {
@@ -610,7 +610,7 @@ mod tests {
     /// first when there are unsaved changes; Cancel leaves the Backstage as it was.
     #[test]
     fn backstage_close_asks_then_closes() {
-        let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), Services::default());
+        let mut a = WordApp::new(wordz_engine::Session::new(wordz_doc::Document::new()), Services::default());
         a.run("text.insert", json!({"text": "Draft"})).unwrap();
         a.run("ui.backstage", json!({"value": true, "page": "info"})).unwrap();
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
@@ -643,7 +643,7 @@ mod tests {
     /// A document without unsaved changes closes without a prompt.
     #[test]
     fn backstage_close_on_a_clean_document_closes_at_once() {
-        let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), Services::default());
+        let mut a = WordApp::new(wordz_engine::Session::new(wordz_doc::Document::new()), Services::default());
         a.run("ui.backstage", json!({"value": true, "page": "home"})).unwrap();
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
             |ui, app: &mut WordApp| {
@@ -662,7 +662,7 @@ mod tests {
 
     #[test]
     fn backstage_save_as_sidebar_opens_save_as_page() {
-        let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), Services::default());
+        let mut a = WordApp::new(wordz_engine::Session::new(wordz_doc::Document::new()), Services::default());
         a.run("ui.backstage", json!({"value": true, "page": "home"})).unwrap();
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
             |ui, app: &mut WordApp| {

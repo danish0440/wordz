@@ -79,3 +79,17 @@ Rust dependencies (egui, eframe, vello_cpu, skrifa, harfrust, krilla, quick-xml,
 are permissively licensed (MIT/Apache-2.0/BSD/ISC/Zlib) and fetched through crates.io.
 
 No Microsoft, Adobe, Avid or Autodesk icons, images, templates or artwork are included.
+
+
+----------------------------------------------------------------------------------------
+WordZ (github.com/danish0440/wordz)
+
+Based on WordCraft by Storytold (ArtCraft), Apache-2.0. Changes by PINTAZ TECHNOLOGIES.
+
+WordZ is a modified version of WordCraft (https://github.com/storytold/wordcraft). Changes made by
+PINTAZ TECHNOLOGIES (Malaysia), applied by .pintaz/rebrand.py on top of each upstream version:
+  - renamed to WordZ (binaries, installers, bundle ids com.pintaz.*, data folders);
+  - the ArtCraft name, wordmark and marks removed (docs/brand/LICENSE-brand.txt), new Z icons;
+  - help/website links point to this fork; the About screen states the credit above;
+  - our own release and upstream-sync workflows (.github/workflows/*-z.yml).
+The licence files (LICENSE-MIT, LICENSE-APACHE) and all upstream copyright notices are unchanged.

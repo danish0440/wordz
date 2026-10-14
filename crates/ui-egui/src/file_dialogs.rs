@@ -40,7 +40,7 @@ const DOCUMENTS: &[&str] = &["docx", "docm", "dotx", "dotm", "doc", "dot", "odt"
 pub fn open_filters(purpose: &str) -> &'static [(&'static str, &'static [&'static str])] {
     match purpose {
         "picture" => &[("Pictures", PICTURES)],
-        "font" => &[("Fonts", wordcraft_fonts::FONT_FILE_EXTS)],
+        "font" => &[("Fonts", wordz_fonts::FONT_FILE_EXTS)],
         "recipients" => &[("Recipient lists", &["csv", "tsv", "txt", "xlsx", "xlsm", "ods"]), ("All files", &["*"])],
         _ => &[("Documents", DOCUMENTS), ("Word document", &["docx"]), ("All files", &["*"])],
     }
@@ -325,7 +325,7 @@ mod tests {
 
     use super::*;
     use crate::Services;
-    use wordcraft_engine::Session;
+    use wordz_engine::Session;
 
     const UNSAVED: &str = "My unsaved novel chapter";
 
@@ -344,7 +344,7 @@ mod tests {
             })),
             ..Default::default()
         };
-        (WordApp::new(Session::new(wordcraft_doc::Document::new()), services), shown)
+        (WordApp::new(Session::new(wordz_doc::Document::new()), services), shown)
     }
 
     /// Answer the dialog the host is showing (the last one asked for).
@@ -359,18 +359,18 @@ mod tests {
     }
 
     fn body_text(a: &WordApp) -> String {
-        a.session.doc.plain_text(wordcraft_doc::StoryRef::Body)
+        a.session.doc.plain_text(wordz_doc::StoryRef::Body)
     }
 
     fn scratch(name: &str) -> std::path::PathBuf {
-        let dir = std::env::temp_dir().join(format!("wordcraft-ui-dialogs-{name}-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("wordz-ui-dialogs-{name}-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         dir
     }
 
     fn saved_text(path: &std::path::Path) -> String {
-        wordcraft_engine::io::open_path(path).unwrap().plain_text(wordcraft_doc::StoryRef::Body)
+        wordz_engine::io::open_path(path).unwrap().plain_text(wordz_doc::StoryRef::Body)
     }
 
     /// Save As returns at once (the UI keeps running); the frame loop saves once the answer arrives.
@@ -403,7 +403,7 @@ mod tests {
         let opened = dir.join("one.docx");
         let picked = dir.join("sub").join("two.docx");
         std::fs::create_dir_all(dir.join("sub")).unwrap();
-        wordcraft_engine::Session::new(wordcraft_doc::Document::from_text("original"))
+        wordz_engine::Session::new(wordz_doc::Document::from_text("original"))
             .run("file.save", &json!({"path": opened.to_string_lossy()}))
             .unwrap();
         let (mut a, shown) = async_app();

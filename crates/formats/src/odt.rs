@@ -16,7 +16,7 @@ use std::io::{Cursor, Read, Write};
 
 use quick_xml::XmlVersion;
 use quick_xml::events::{BytesStart, Event};
-use wordcraft_doc::{Align, Document, Rgb};
+use wordz_doc::{Align, Document, Rgb};
 
 use crate::model::{self, Cell, FBlock, FTable, Flow, Fmt, Inline, Kind, ListInfo, Meta, Para, make_img, mime_of};
 
@@ -478,7 +478,7 @@ impl Writer {
     }
 }
 
-fn styles_xml(sec: &wordcraft_doc::SectionProps, body_font: &str) -> String {
+fn styles_xml(sec: &wordz_doc::SectionProps, body_font: &str) -> String {
     let mut s = format!("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<office:document-styles {NS}><office:styles>");
     s.push_str(&format!(
         "<style:default-style style:family=\"paragraph\"><style:paragraph-properties fo:margin-bottom=\"8pt\"/><style:text-properties fo:font-family=\"'{}'\" fo:font-size=\"12pt\"/></style:default-style>",
@@ -514,7 +514,7 @@ fn styles_xml(sec: &wordcraft_doc::SectionProps, body_font: &str) -> String {
 
 fn meta_xml(m: &Meta) -> String {
     let mut s =
-        format!("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<office:document-meta {NS}><office:meta><meta:generator>WordCraft</meta:generator>");
+        format!("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<office:document-meta {NS}><office:meta><meta:generator>WordZ</meta:generator>");
     if !m.title.is_empty() {
         s.push_str(&format!("<dc:title>{}</dc:title>", x(&m.title)));
     }
@@ -547,7 +547,7 @@ pub fn export(doc: &Document) -> Result<Vec<u8>, String> {
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<office:document-content {NS}>{}<office:body><office:text>\n{body}</office:text></office:body></office:document-content>\n",
         w.automatic_styles()
     );
-    let body_font = doc.styles.default_chr.font.clone().unwrap_or_else(|| wordcraft_doc::styles::BODY_FONT.to_string());
+    let body_font = doc.styles.default_chr.font.clone().unwrap_or_else(|| wordz_doc::styles::BODY_FONT.to_string());
     let styles = styles_xml(&doc.last_section, &body_font);
     let meta = meta_xml(&flow.meta);
     let mut manifest = String::from(
@@ -1251,7 +1251,7 @@ impl Body<'_> {
             "table-row" => {
                 if let Some(t) = self.tables.last_mut() {
                     let r = std::mem::take(&mut t.row);
-                    if !r.is_empty() && t.rows.len() < wordcraft_doc::table::MAX_ROWS {
+                    if !r.is_empty() && t.rows.len() < wordz_doc::table::MAX_ROWS {
                         t.rows.push(r);
                     }
                 }
@@ -1414,7 +1414,7 @@ pub fn import(bytes: &[u8]) -> Result<Document, String> {
 }
 
 /// Read the page size, orientation and margins of the first master page in `styles.xml` into `sec`.
-fn apply_page_layout(xml: &[u8], sec: &mut wordcraft_doc::SectionProps) {
+fn apply_page_layout(xml: &[u8], sec: &mut wordz_doc::SectionProps) {
     let mut layouts: HashMap<String, Attrs> = HashMap::new();
     let mut cur: Option<String> = None;
     let mut master: Option<String> = None;
@@ -1548,7 +1548,7 @@ mod tests {
             <style:master-page style:name="Standard" style:page-layout-name="pm2"/>
             <style:master-page style:name="Other" style:page-layout-name="pm1"/>
             </office:master-styles></office:document-styles>"#;
-        let mut sec = wordcraft_doc::SectionProps::default();
+        let mut sec = wordz_doc::SectionProps::default();
         apply_page_layout(xml, &mut sec);
         assert!(sec.landscape);
         assert_eq!((sec.page_w, sec.page_h, sec.margin_left, sec.margin_top), (720.0, 360.0, 72.0, 72.0));
@@ -1567,14 +1567,14 @@ mod tests {
             )
         };
         // Huge values: the page is capped at 22 inches and margins at the page's longer side.
-        let mut sec = wordcraft_doc::SectionProps::default();
+        let mut sec = wordz_doc::SectionProps::default();
         apply_page_layout(styles("1e30pt", "1e30in", "1e30pt").as_bytes(), &mut sec);
         assert_eq!((sec.page_w, sec.page_h), (1584.0, 1584.0));
         assert_eq!((sec.margin_top, sec.margin_left), (1584.0, 1584.0));
         // Negative, zero, tiny and non-numeric values leave the defaults alone.
-        let def = wordcraft_doc::SectionProps::default();
+        let def = wordz_doc::SectionProps::default();
         for (w, h, m) in [("-10in", "-5in", "-1in"), ("0pt", "0pt", "NaNpt"), ("1pt", "2pt", "infpt"), ("NaN", "inf", "x")] {
-            let mut sec = wordcraft_doc::SectionProps::default();
+            let mut sec = wordz_doc::SectionProps::default();
             apply_page_layout(styles(w, h, m).as_bytes(), &mut sec);
             assert_eq!((sec.page_w, sec.page_h), (def.page_w, def.page_h), "{w} {h}");
             assert_eq!((sec.margin_top, sec.margin_right), (def.margin_top, def.margin_right), "{m}");

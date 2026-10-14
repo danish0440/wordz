@@ -1,6 +1,6 @@
 # Czech (cs) interface catalog. Columns, separated by a TAB:
 #   context <TAB> English source <TAB> translation
-#   context    empty (WordCraft uses no contexts yet)
+#   context    empty (WordZ uses no contexts yet)
 #   source     the English text exactly as in the code (tl!(...), ribbon labels, command labels)
 #   escapes    \n  \t  \\  inside a column. `{name}` placeholders must appear in both columns, and a
 #              trailing "…" in one needs one in the other.
@@ -9,7 +9,7 @@
 # Clean room: every entry was written from the plain meaning of the English label in ordinary
 # Czech computing and typography vocabulary. No Microsoft Word (or other product) localisation,
 # string table or translated UI was consulted or copied; add entries the same way.
-# Product, format and technology names (WordCraft, PDF, Markdown, MCP …) stay in Latin letters.
+# Product, format and technology names (WordZ, PDF, Markdown, MCP …) stay in Latin letters.
 
 	(All)	(Vše)
 	(no style)	(žádný styl)
@@ -22,13 +22,13 @@
 	1/4 Em Space	Čtvrtčtverčíková mezera
 	3-D	3D
 	A file dialog is already open.	Dialogové okno souboru je již otevřené.
-	A free, open-source word processor written from scratch in Rust.\nPart of the Crafting Apps from the ArtCraft team.	Bezplatný textový procesor s otevřeným zdrojovým kódem napsaný od základu v jazyce Rust.\nSoučást sady Crafting Apps od týmu ArtCraft.
+	A free, open-source word processor written from scratch in Rust.\nPart of the Z Apps.	A free, open-source word processor written from scratch in Rust.\nPart of the Z Apps.
 	A mail merge field	Pole hromadné korespondence
 	A numbered sequence (figures, tables…)	Číslovaná posloupnost (obrázky, tabulky…)
 	A password is required to open this document.	K otevření tohoto dokumentu je vyžadováno heslo.
 	A table of contents	Obsah
 	About	O aplikaci
-	About WordCraft	O aplikaci WordCraft
+	About WordZ	O aplikaci WordZ
 	Accent	Diakritika
 	Accept	Přijmout
 	Accept All Changes	Přijmout všechny změny
@@ -106,7 +106,7 @@
 	Automatic Table 1 (3 levels)	Automatický obsah 1 (3 úrovně)
 	Automatic Table 2 (2 levels)	Automatický obsah 2 (2 úrovně)
 	AutoSave	Automatické ukládání
-	AutoSave documents you have saved in WordCraft	Automaticky ukládat dokumenty uložené ve WordCraftu
+	AutoSave documents you have saved in WordZ	Automaticky ukládat dokumenty uložené ve WordZu
 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	Automatické ukládání selhalo: {error}. Uložením dokumentu automatické ukládání znovu zapnete.
 	AutoSave isn't available in the browser: it can't write to your files. Save downloads a copy.	Automatické ukládání není v prohlížeči dostupné, protože nemůže zapisovat do vašich souborů. Příkaz Uložit stáhne kopii.
 	AutoSave only keeps .docx, .odt and .rtf files; {name} can't keep all formatting. Save as .docx to turn on AutoSave.	Automatické ukládání podporuje pouze soubory .docx, .odt a .rtf; formát {name} nedokáže zachovat veškeré formátování. Pro zapnutí automatického ukládání uložte dokument jako .docx.
@@ -392,7 +392,7 @@
 	Erase Ink	Smazat rukopis
 	Eraser	Guma
 	Even Page	Sudá stránka
-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Každý příkaz je dostupný skriptům a AI agentům: spusťte `wordcraft-cli mcp` pro server MCP, nebo spusťte aplikaci s parametrem `--control <port>` pro řídicí kanál JSON.
+	Every command is available to scripts and AI agents: run `wordz-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Každý příkaz je dostupný skriptům a AI agentům: spusťte `wordz-cli mcp` pro server MCP, nebo spusťte aplikaci s parametrem `--control <port>` pro řídicí kanál JSON.
 	Every field needs a name.	Každé pole musí mít název.
 	Exactly	Přesně
 	Exactly {n}	Přesně {n}
@@ -463,7 +463,7 @@
 	from Unicode (hex)	z Unicode (hex)
 	Function	Funkce
 	General	Obecné
-	getartcraft.com/apps/wordcraft	getartcraft.com/apps/wordcraft
+	github.com/danish0440/wordz	github.com/danish0440/wordz
 	Glow	Záře
 	Glow Colors	Barvy záře
 	Go To	Přejít na
@@ -570,15 +570,15 @@
 	Interface theme:	Motiv rozhraní:
 	Interface\nTheme	Motiv\nrozhraní
 	Italic	Kurzíva
-	Join the ArtCraft community on Discord	Připojte se ke komunitě ArtCraft na Discordu
-	Join us on Discord: discord.gg/artcraft	Připojte se k nám na Discordu: discord.gg/artcraft
+	Join the community on GitHub	Join the community on GitHub
+	Join us on GitHub: github.com/danish0440/wordz/issues	Join us on GitHub: github.com/danish0440/wordz/issues
 	Justification	Zarovnání
 	Justified	Do bloku
 	Justify	Do bloku
 	Keep Lines Together	Svázat řádky
 	Keep lines together	Svázat řádky
 	Keep Text Only	Zachovat pouze text
-	Keep the password somewhere safe: without it nobody, WordCraft included, can open the document. Leave both boxes empty to remove the password.	Heslo si bezpečně uložte: bez něj dokument nikdo (včetně aplikace WordCraft) neotevře. Chcete-li heslo odebrat, ponechte obě pole prázdná.
+	Keep the password somewhere safe: without it nobody, WordZ included, can open the document. Leave both boxes empty to remove the password.	Heslo si bezpečně uložte: bez něj dokument nikdo (včetně aplikace WordZ) neotevře. Chcete-li heslo odebrat, ponechte obě pole prázdná.
 	Keep with Next	Svázat s následujícím
 	Keep with next	Svázat s následujícím
 	Keeps the fonts and formatting of the copied text.	Zachová písma a formátování zkopírovaného textu.
@@ -659,7 +659,7 @@
 	Merge Record #	Číslo slučovaného záznamu
 	Merged PRs	Sloučené PR
 	Mirrored	Zrcadlové
-	MIT OR Apache-2.0. Copyright (c) 2026 ArtCraft Team and the WordCraft contributors.	MIT OR Apache-2.0. Copyright (c) 2026 ArtCraft Team a přispěvatelé projektu WordCraft.
+	MIT OR Apache-2.0. Copyright (c) 2026 Upstream Team and the WordCraft contributors.	MIT OR Apache-2.0. Copyright (c) 2026 Upstream Team a přispěvatelé projektu WordCraft.
 	Moderate	Střední
 	Modify Style	Upravit styl
 	Modify Table Style	Upravit styl tabulky
@@ -1048,7 +1048,7 @@
 	Soft Edges	Měkké okraje
 	Sort	Seřadit
 	Sort order:	Pořadí řazení:
-	Source code: github.com/storytold/wordcraft	Zdrojový kód: github.com/storytold/wordcraft
+	Source code: github.com/danish0440/wordz	Zdrojový kód: github.com/danish0440/wordz
 	Space	Mezera
 	Space after	Mezera za
 	Space after: {pt} pt	Mezera za: {pt} b.
@@ -1245,7 +1245,7 @@
 	Word Left	O slovo vlevo
 	Word Right	O slovo vpravo
 	WordArt	WordArt
-	WordCraft	WordCraft
+	WordZ	WordZ
 	Words	Slova
 	Words only	Pouze slova
 	Wrap Text	Obtékání textu
@@ -1921,7 +1921,7 @@
 	Word document	Dokument Word
 	All files	Všechny soubory
 	Recipient lists	Seznamy příjemců
-	The system file dialog isn't available, so WordCraft shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Systémový dialog pro práci se soubory není k dispozici, proto WordCraft zobrazuje vlastní. Chcete-li používat systémový dialog, nainstalujte portál pro výběr souborů (například xdg-desktop-portal-gtk) nebo zenity.
+	The system file dialog isn't available, so WordZ shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Systémový dialog pro práci se soubory není k dispozici, proto WordZ zobrazuje vlastní. Chcete-li používat systémový dialog, nainstalujte portál pro výběr souborů (například xdg-desktop-portal-gtk) nebo zenity.
 	Up one level	O úroveň výš
 	Home folder	Domovská složka
 	{name} wasn't found.	{name} nebyl nalezen.
@@ -1929,8 +1929,8 @@
 	This folder can't be read: {error}	Tuto složku nelze přečíst: {error}
 	Showing the first {count} items.	Zobrazuje se prvních {count} položek.
 	File name:	Název souboru:
-	Browse in WordCraft…	Procházet ve WordCraftu…
-	Open a file with WordCraft's own browser when the system file dialog doesn't appear.	Otevřít soubor pomocí vlastního prohlížeče souborů WordCraftu, když se systémový dialog pro práci se soubory nezobrazí.
+	Browse in WordZ…	Procházet ve WordZu…
+	Open a file with WordZ's own browser when the system file dialog doesn't appear.	Otevřít soubor pomocí vlastního prohlížeče souborů WordZu, když se systémový dialog pro práci se soubory nezobrazí.
 	Hide White Space	Skrýt prázdné místo
 	All pages	Všechny stránky
 	Current page	Aktuální stránka
@@ -2058,15 +2058,15 @@
 	Undo 1 Action	Vrátit 1 akci
 	Undo {n} Actions	Vrátit akce: {n}
 	Start-up	Spuštění
-	Show the Start screen when WordCraft starts	Při spuštění WordCraftu zobrazit úvodní obrazovku
-	On: WordCraft opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Zapnuto: WordCraft se otevře na kartě Soubor › Domů s prázdným dokumentem, šablonami a nedávnými dokumenty. Vypnuto: otevře prázdný dokument.
-	Couldn't make WordCraft the default: {error}	WordCraft se nepodařilo nastavit jako výchozí: {error}
-	In Default apps, choose WordCraft for the document types you want it to open.	Ve Výchozích aplikacích vyberte WordCraft pro typy dokumentů, které má otevírat.
-	Make WordCraft the default for Word documents…	Nastavit WordCraft jako výchozí pro dokumenty Word…
-	Opens .docx, .doc, .rtf and .odt files and Word templates with WordCraft from now on.	Soubory .docx, .doc, .rtf a .odt a šablony Wordu se od teď otevírají ve WordCraftu.
-	Opens Settings › Default apps, where you choose WordCraft for .docx and the other document types.	Otevře Nastavení › Výchozí aplikace, kde zvolíte WordCraft pro .docx a další typy dokumentů.
-	To open Word documents with WordCraft by default: select one in Finder, choose File › Get Info, pick WordCraft under Open with, then click Change All.	Chcete-li dokumenty Word otevírat ve WordCraftu jako výchozí: vyberte jeden ve Finderu, zvolte Soubor › Informace, v části „Otevřít v aplikaci“ vyberte WordCraft a klikněte na „Změnit vše“.
-	WordCraft is now the default app for Word documents.	WordCraft je nyní výchozí aplikací pro dokumenty Word.
+	Show the Start screen when WordZ starts	Při spuštění WordZu zobrazit úvodní obrazovku
+	On: WordZ opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Zapnuto: WordZ se otevře na kartě Soubor › Domů s prázdným dokumentem, šablonami a nedávnými dokumenty. Vypnuto: otevře prázdný dokument.
+	Couldn't make WordZ the default: {error}	WordZ se nepodařilo nastavit jako výchozí: {error}
+	In Default apps, choose WordZ for the document types you want it to open.	Ve Výchozích aplikacích vyberte WordZ pro typy dokumentů, které má otevírat.
+	Make WordZ the default for Word documents…	Nastavit WordZ jako výchozí pro dokumenty Word…
+	Opens .docx, .doc, .rtf and .odt files and Word templates with WordZ from now on.	Soubory .docx, .doc, .rtf a .odt a šablony Wordu se od teď otevírají ve WordZu.
+	Opens Settings › Default apps, where you choose WordZ for .docx and the other document types.	Otevře Nastavení › Výchozí aplikace, kde zvolíte WordZ pro .docx a další typy dokumentů.
+	To open Word documents with WordZ by default: select one in Finder, choose File › Get Info, pick WordZ under Open with, then click Change All.	Chcete-li dokumenty Word otevírat ve WordZu jako výchozí: vyberte jeden ve Finderu, zvolte Soubor › Informace, v části „Otevřít v aplikaci“ vyberte WordZ a klikněte na „Změnit vše“.
+	WordZ is now the default app for Word documents.	WordZ je nyní výchozí aplikací pro dokumenty Word.
 	Numerals:	Číslice:
 	Numerals	Číslice
 	Hindi	Hindské
