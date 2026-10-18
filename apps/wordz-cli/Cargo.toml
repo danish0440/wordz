@@ -20,3 +20,4 @@ wordz-render = { workspace = true }
 wordz-mcp = { workspace = true }
 wordz-zotero = { workspace = true }
 serde_json = { workspace = true }
+sys-locale = "0.3"
