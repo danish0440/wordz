@@ -1,3 +1,4 @@
+ci.yml
 freebsd.yml
 nix.yml
 packaging-lint.yml
