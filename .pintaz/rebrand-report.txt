@@ -1,7 +1,7 @@
 rebrand wordcraft -> WordZ
-about credit inserted in: ['crates/ui-egui/src/dialogs.rs (fallback, after line 2688)']
+about credit inserted in: ['crates/ui-egui/src/dialogs.rs (fallback, after line 2692)']
 launcher patches: []
 lines still naming ArtCraft/getartcraft/discord (non-doc): 3
-crates/ui-egui/src/dialogs.rs:2689: // PINTAZ-ABOUT: required credit (Apache-2.0 change notice; ArtCraft brand licence)
-crates/ui-egui/src/dialogs.rs:2691: ui.label("Based on WordCraft by Storytold (ArtCraft), Apache-2.0. Changes by PINTAZ TECHNOLOGIES.");
-crates/ui-egui/src/dialogs.rs:2701: egui::RichText::new(tl!("MIT OR Apache-2.0. Copyright (c) 2026 ArtCraft Team and the WordCraft contributors."))
+crates/ui-egui/src/dialogs.rs:2693: // PINTAZ-ABOUT: required credit (Apache-2.0 change notice; ArtCraft brand licence)
+crates/ui-egui/src/dialogs.rs:2695: ui.label("Based on WordCraft by Storytold (ArtCraft), Apache-2.0. Changes by PINTAZ TECHNOLOGIES.");
+crates/ui-egui/src/dialogs.rs:2705: egui::RichText::new(tl!("MIT OR Apache-2.0. Copyright (c) 2026 ArtCraft Team and the WordCraft contributors."))
