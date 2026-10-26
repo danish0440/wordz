@@ -43,9 +43,13 @@ modules:
       env:
         CARGO_HOME: /run/build/wordz/cargo
         CARGO_NET_OFFLINE: 'true'
+        # The interface translations (the craft-i18n source below), embedded by build.rs.
+        CRAFT_I18N_DIR: /run/build/wordz/craft-i18n
+        CRAFT_I18N_REQUIRED: '1'
     build-commands:
       - cargo --offline build --release --locked -p wordz -p wordz-cli
       - install -Dm755 target/release/wordz /app/bin/wordz
+      - install -Dm644 NOTICE /app/share/doc/wordz/NOTICE
       - install -Dm755 target/release/wordz-cli /app/bin/wordz-cli
       - install -Dm644 packaging/linux/com.pintaz.wordz.desktop /app/share/applications/com.pintaz.wordz.desktop
       - install -Dm644 packaging/linux/com.pintaz.wordz.mime.xml /app/share/mime/packages/com.pintaz.wordz.xml
@@ -64,4 +68,9 @@ modules:
           - corpus
           - build-flatpak
           - .flatpak-builder
+      # The interface translations at the commit in craft-i18n.rev (a test keeps the two equal).
+      - type: git
+        url: https://github.com/storytold/craft-i18n
+        commit: 9205108cfdced5177706264038848b68b2422d2b
+        dest: craft-i18n
       - cargo-sources.json
