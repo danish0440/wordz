@@ -4,7 +4,9 @@
 
 .DESCRIPTION
   Produces, in $env:DIST (default: dist/release):
-    wordz-<version>-windows-<arch>.msi            per-machine installer (WiX v5)
+    wordz-<version>-windows-<arch>.msi            installer (WiX v5), one dual-scope package: for the
+                                                      current user by default, no admin rights (#39);
+                                                      "Everyone on this computer" installs per machine
     wordz-<version>-windows-<arch>-portable.zip   wordz.exe + wordz-cli.exe
 
   The binaries link the C runtime statically (+crt-static), so neither the MSI nor the portable
@@ -93,6 +95,24 @@ Copy-Item (Join-Path $Bin 'wordz.exe'), (Join-Path $Bin 'wordz-cli.exe') $Stage
 
 & (Join-Path $PSScriptRoot 'sign.ps1') (Join-Path $Stage 'wordz.exe') (Join-Path $Stage 'wordz-cli.exe')
 
+# Required notices ship in every MSI, independently of optional craft-fonts.
+$AppNotices = Join-Path $Stage 'app-notices'
+New-Item -ItemType Directory -Force -Path $AppNotices | Out-Null
+Copy-Item -LiteralPath (Join-Path $Root 'NOTICE'), (Join-Path $Root 'ATTRIBUTION.md') -Destination $AppNotices
+
+# ---- font notices for the MSI ------------------------------------------------------------------
+# The portable ZIP already carries these notices; stage the complete files before MSI creation too.
+$Docs = Join-Path $Stage 'font-licences'
+New-Item -ItemType Directory -Force -Path $Docs | Out-Null
+$HasCraftFontLicences = 0
+if ($env:CRAFT_FONTS_DIR) {
+  foreach ($ofl in Get-ChildItem -Path (Join-Path $env:CRAFT_FONTS_DIR 'fonts\*\OFL.txt') -File -ErrorAction SilentlyContinue) {
+    Copy-Item -LiteralPath $ofl.FullName -Destination (Join-Path $Docs "OFL-$($ofl.Directory.Name).txt")
+    $HasCraftFontLicences = 1
+  }
+}
+# ---- end font notices for the MSI --------------------------------------------------------------
+
 # ---- MSI ---------------------------------------------------------------------------------------
 # The installer's welcome page shows the license: build its RTF from LICENSE-MIT and LICENSE-APACHE
 # so it never drifts from them. Hard-wrapped lines are rejoined into paragraphs so the text wraps
@@ -124,14 +144,22 @@ $rtf = '{\rtf1\ansi\ansicpg1252\deff0{\fonttbl{\f0\fswiss\fcharset0 Tahoma;}}\vi
   ($paragraphs -join "\par`r`n") + "\par`r`n}`r`n"
 [System.IO.File]::WriteAllText($LicenseRtf, $rtf, [System.Text.Encoding]::ASCII)
 
+# One MSI from one dual-scope source (see wordz.wxs and install-policy.wxi): per user by default into
+# %LOCALAPPDATA%\Programs\ArtCraft\WordZ (#39), per machine into Program Files\ArtCraft on request.
+# The plain name is the one every sibling app, the launcher and the shared windows-arm64 workflow expect.
 $Msi = Join-Path $Dist "wordz-$Version-windows-$Arch.msi"
-Invoke-Native 'wix build' {
+Invoke-Native "wix build" {
   wix build (Join-Path $PSScriptRoot 'wordz.wxs') -arch $Arch `
     -ext WixToolset.UI.wixext -ext WixToolset.Util.wixext `
     -d "Version=$MsiVersion" -d "BinDir=$Stage" -d "IconPath=$(Join-Path $Root 'assets\app-icon\wordz.ico')" `
     -d "LicenseRtf=$LicenseRtf" `
+    -d "AppNoticesDir=$AppNotices" -d "DocsDir=$Docs" -d "HasCraftFontLicences=$HasCraftFontLicences" -d "Scope=perUserOrMachine" `
     -o $Msi
 }
+# Check the compiled scope, path and registration contract before signing.
+$shell = (Get-Process -Id $PID).Path
+& $shell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'check-install-policy.ps1') -MsiPath $Msi
+if ($LASTEXITCODE -ne 0) { throw "Compiled installer policy failed for $Msi." }
 # wix writes its debug symbols (.wixpdb) next to the MSI; keep them out of the release assets.
 Remove-Item -Force -ErrorAction SilentlyContinue ([IO.Path]::ChangeExtension($Msi, '.wixpdb'))
 & (Join-Path $PSScriptRoot 'sign.ps1') $Msi
@@ -141,7 +169,7 @@ $Portable = Join-Path $TargetDir "windows-package\wordz-$Version-windows-$Arch-p
 Remove-Item -Recurse -Force $Portable -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $Portable | Out-Null
 Copy-Item (Join-Path $Stage '*.exe') $Portable
-foreach ($f in 'README.md', 'LICENSE', 'LICENSE-MIT', 'LICENSE-APACHE', 'NOTICE') {
+foreach ($f in 'README.md', 'LICENSE', 'LICENSE-MIT', 'LICENSE-APACHE', 'NOTICE', 'ATTRIBUTION.md') {
   $p = Join-Path $Root $f
   if (Test-Path $p) { Copy-Item $p $Portable }
 }
