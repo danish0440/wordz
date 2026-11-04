@@ -1,6 +1,8 @@
+ci.yml
 freebsd.yml
 nix.yml
 packaging-lint.yml
 printing.yml
 release.yml
+sonarcloud.yml
 windows-arm64.yml
