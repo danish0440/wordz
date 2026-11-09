@@ -8,5 +8,10 @@ description = "WordZ geometry and units: points, twips, EMU, inches, centimetres
 [lints]
 workspace = true
 
+[features]
+# Picture decoding within a memory budget (`picture`), for the crates that decode pictures.
+image = ["dep:image"]
+
 [dependencies]
+image = { workspace = true, optional = true }
 serde = { workspace = true }
