@@ -21,3 +21,8 @@ wordz-mcp = { workspace = true }
 wordz-zotero = { workspace = true }
 serde_json = { workspace = true }
 sys-locale = "0.3"
+
+[dev-dependencies]
+wordz-fonts = { workspace = true }
+image = { workspace = true }
+zip = { workspace = true }
