@@ -9,15 +9,12 @@ description = "WordZ reader for the Word 97-2003 binary file format (.doc, [MS-D
 workspace = true
 
 [dependencies]
+craft-doc-binary = { workspace = true }
+craft-wordmodel = { workspace = true }
 wordz-doc = { workspace = true }
-wordz-geom = { workspace = true }
-cfb = { workspace = true }
-image = { workspace = true }
-miniz_oxide = { workspace = true }
-sha1 = { workspace = true }
-thiserror = { workspace = true }
-log = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
 
 [dev-dependencies]
-proptest = { workspace = true }
-serde_json = { workspace = true }
+wordz-doc = { workspace = true, features = ["test-support"] }
+cfb = { workspace = true }
