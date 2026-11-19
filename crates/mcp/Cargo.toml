@@ -13,5 +13,6 @@ wordz-doc = { workspace = true }
 wordz-engine = { workspace = true }
 wordz-render = { workspace = true }
 wordz-control-key = { workspace = true }
+craft-mcp-server = { workspace = true }
 serde_json = { workspace = true }
 log = { workspace = true }
