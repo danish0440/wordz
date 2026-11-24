@@ -9,11 +9,11 @@ description = "WordZ rasteriser: pages and thumbnails from the layout display li
 workspace = true
 
 [dependencies]
-wordz-geom = { workspace = true }
+wordz-geom = { workspace = true, features = ["image"] }
 wordz-doc = { workspace = true }
 wordz-fonts = { workspace = true }
 wordz-layout = { workspace = true }
-wordz-metafile = { workspace = true }
+craft-metafile = { workspace = true }
 vello_cpu = { workspace = true }
 image = { workspace = true }
 log = { workspace = true }
