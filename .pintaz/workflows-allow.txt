@@ -1,6 +1,14 @@
+ci.yml
 freebsd.yml
+house-rules.yml
+nightly-build.yml
+nightly-dispatch.yml
+nightly-sign.yml
+nightly.yml
 nix.yml
+notify-services.yml
 packaging-lint.yml
 printing.yml
 release.yml
+sonarcloud.yml
 windows-arm64.yml
