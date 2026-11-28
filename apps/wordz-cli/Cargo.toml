@@ -19,5 +19,12 @@ wordz-engine = { workspace = true }
 wordz-render = { workspace = true }
 wordz-mcp = { workspace = true }
 wordz-zotero = { workspace = true }
+wordz-validate = { workspace = true }
 serde_json = { workspace = true }
 sys-locale = "0.3"
+
+[dev-dependencies]
+wordz-fonts = { workspace = true }
+wordz-geom = { workspace = true, features = ["image"] }
+image = { workspace = true }
+craft-zip = { workspace = true }
